@@ -90,3 +90,54 @@ async function loadCatalogue() {
 }
 
 loadCatalogue();
+
+/* ---- care plan billing period ---- */
+//
+// Prices for all three periods live in data attributes on each plan, rather
+// than being derived from the monthly figure. A percentage applied in JS would
+// produce numbers like ৳4,320 that nobody would actually print on an invoice;
+// the discounted prices are decided once and stated plainly.
+
+const billing = document.querySelector(".billing");
+const plans = document.querySelectorAll(".plan");
+
+if (billing && plans.length) {
+  const LABEL = { monthly: "/month", six: " for 6 months", year: " for a year" };
+  const MONTHS = { monthly: 1, six: 6, year: 12 };
+  const taka = (n) => `৳${n.toLocaleString("en-US")}`;
+
+  function render(period) {
+    for (const plan of plans) {
+      const total = Number(plan.dataset[period] || 0);
+      plan.querySelector(".plan-amount").textContent = taka(total);
+      plan.querySelector(".plan-period").textContent = LABEL[period];
+
+      // On the longer terms, show what it works out to per month — that is the
+      // number a shop owner compares against, and hiding it makes the bigger
+      // total look worse than it is.
+      const equiv = plan.querySelector(".plan-equiv");
+      if (period === "monthly") {
+        equiv.textContent = "";
+      } else {
+        const perMonth = Math.round(total / MONTHS[period]);
+        const monthly = Number(plan.dataset.monthly || 0);
+        const saved = monthly * MONTHS[period] - total;
+        equiv.textContent = `${taka(perMonth)}/month · you save ${taka(saved)}`;
+      }
+    }
+  }
+
+  billing.addEventListener("click", (event) => {
+    const button = event.target.closest(".billing-opt");
+    if (!button) return;
+
+    for (const opt of billing.querySelectorAll(".billing-opt")) {
+      const active = opt === button;
+      opt.classList.toggle("is-active", active);
+      opt.setAttribute("aria-pressed", String(active));
+    }
+    render(button.dataset.period);
+  });
+
+  render("monthly");
+}
