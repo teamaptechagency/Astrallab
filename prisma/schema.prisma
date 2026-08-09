@@ -81,6 +81,13 @@ model Licence {
   customerEmail String
   customerName  String?
 
+  // What the customer actually paid, as reported by the store at issue time.
+  // Kept here so revenue reporting is derived from real orders rather than
+  // multiplying a licence count by today's list price — which would silently
+  // rewrite history every time the price changes.
+  amount   Float?
+  currency String @default("BDT")
+
   // status: unactivated | active | deactivated | suspended | revoked
   //
   // unactivated — paid, never bound to a domain
@@ -104,6 +111,9 @@ model Licence {
   activations Activation[]
   events      LicenceEvent[]
   ayojonLinks AyojonLink[]
+  reports     Report[]
+  products    SyncedProduct[]
+  leads       Lead[]
 
   @@unique([orderSource, orderRef])
   @@index([customerEmail])
@@ -151,6 +161,131 @@ model LicenceEvent {
 
   @@index([licenceId, createdAt])
   @@index([kind, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Support
+// ---------------------------------------------------------------------------
+
+// A bug report or feedback item submitted from inside a customer's CMS.
+//
+// Submitted with the licence key, so every report arrives already knowing which
+// customer, which domain and which version it came from — the three questions
+// support otherwise spends the first two replies asking.
+model Report {
+  id        String  @id @default(cuid())
+  licenceId String?
+  licence   Licence? @relation(fields: [licenceId], references: [id], onDelete: SetNull)
+
+  domain String?
+  // kind: bug | feedback | question
+  kind   String  @default("bug")
+  subject String
+  body    String
+
+  // Environment captured automatically. Free text — it is whatever the install
+  // reported and must never be trusted for authorisation.
+  cmsVersion String?
+  phpVersion String?
+
+  // status: open | investigating | resolved | closed
+  status   String  @default("open")
+  // severity: low | normal | high | critical
+  severity String  @default("normal")
+  // Version the fix shipped in, once there is one.
+  fixedIn  String?
+  response String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([licenceId])
+}
+
+// ---------------------------------------------------------------------------
+// Data synced from customer stores
+// ---------------------------------------------------------------------------
+
+// A product from a customer's shop.
+//
+// Pushed by the install, never pulled — customer sites sit on shared hosting
+// with no inbound access. Image URLs point back at the customer's own server
+// rather than being copied, which keeps storage cost near zero.
+model SyncedProduct {
+  id        String  @id @default(cuid())
+  licenceId String
+  licence   Licence @relation(fields: [licenceId], references: [id], onDelete: Cascade)
+  domain    String
+
+  // The product's id in the customer's own database. Unique per licence so a
+  // re-sync updates rather than duplicating.
+  externalId String
+  name       String
+  price      Float?
+  currency   String  @default("BDT")
+  stock      Int?
+  imageUrl   String?
+  url        String?
+  category   String?
+
+  syncedAt DateTime @default(now())
+
+  @@unique([licenceId, externalId])
+  @@index([licenceId])
+  @@index([name])
+}
+
+// A lead captured on a customer's shop.
+//
+// This is personal data belonging to the customer's customers — people who
+// have no relationship with Astra Lab. It is only ever stored for installs
+// that explicitly opted in (see AyojonLink.scopes and the store's consent
+// setting); the sync endpoint refuses it otherwise.
+model Lead {
+  id        String  @id @default(cuid())
+  licenceId String
+  licence   Licence @relation(fields: [licenceId], references: [id], onDelete: Cascade)
+  domain    String
+
+  externalId String
+  name       String?
+  phone      String?
+  email      String?
+  // source: order | enquiry | newsletter | abandoned_cart
+  source     String  @default("enquiry")
+  note       String?
+  capturedAt DateTime
+
+  syncedAt DateTime @default(now())
+
+  @@unique([licenceId, externalId])
+  @@index([licenceId])
+}
+
+// ---------------------------------------------------------------------------
+// Finance
+// ---------------------------------------------------------------------------
+
+// Manually recorded money in and out.
+//
+// Licence sales are NOT stored here — they are derived from Licence.amount, so
+// the two can never disagree. This table is for everything the hub cannot know
+// by itself: hosting bills, contractor payments, refunds, ad spend.
+model Transaction {
+  id     String @id @default(cuid())
+  // kind: income | expense
+  kind   String
+  amount Float
+  currency String @default("BDT")
+  // category: hosting | salary | marketing | refund | tools | other
+  category String @default("other")
+  note     String?
+  occurredAt DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([occurredAt])
+  @@index([kind, occurredAt])
 }
 
 // ---------------------------------------------------------------------------

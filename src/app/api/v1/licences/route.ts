@@ -24,6 +24,11 @@ const issueSchema = z.object({
   customerEmail: z.string().email(),
   customerName: z.string().optional(),
   seatLimit: z.number().int().min(1).max(100).optional(),
+  // What the order actually charged. Nullable because older versions of the
+  // store plugin don't send it — revenue is then understated rather than
+  // guessed, and the dashboard says so plainly.
+  amount: z.number().nonnegative().nullable().optional(),
+  currency: z.string().max(8).optional(),
 });
 
 export async function POST(request: Request) {
@@ -103,6 +108,8 @@ export async function POST(request: Request) {
       orderSource: input.orderSource,
       customerEmail: input.customerEmail,
       customerName: input.customerName ?? null,
+      amount: input.amount ?? null,
+      ...(input.currency ? { currency: input.currency } : {}),
       ...(input.seatLimit ? { seatLimit: input.seatLimit } : {}),
       events: {
         create: { kind: "issued", detail: `order ${input.orderRef}` },

@@ -72,10 +72,17 @@ class Astralab_Orders {
 		// deduplicates on exactly this string.
 		$order_ref = $order->get_id() . '-' . $item_id;
 
+		$item = $order->get_item( $item_id );
+
 		$payload = array(
 			'productSlug'   => $slug,
 			'orderRef'      => (string) $order_ref,
 			'customerEmail' => $order->get_billing_email(),
+			// What this line actually charged, so the hub reports revenue from
+			// real orders rather than multiplying a licence count by today's
+			// price — which would rewrite past months on every price change.
+			'amount'        => $item ? (float) $order->get_line_total( $item, true ) : null,
+			'currency'      => $order->get_currency(),
 		);
 
 		// Omit rather than send an empty string — billing names are not always
