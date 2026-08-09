@@ -13,6 +13,7 @@
     "db:studio": "prisma studio",
     "keys:generate": "tsx scripts/generate-keys.ts",
     "smoke": "tsx --env-file=.env scripts/smoke-test.ts",
+    "db:purge": "tsx --env-file=.env scripts/purge-test-data.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

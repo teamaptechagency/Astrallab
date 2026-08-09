@@ -1,4 +1,5 @@
 import { createHmac } from "node:crypto";
+import { cleanupByOrderRef } from "./_cleanup-helper";
 
 // Proves a second product needs no code: issue, activate and heartbeat against
 // a product that was added through the console, not the seed.
@@ -75,7 +76,8 @@ async function main() {
     hb.json.upgradePath,
   );
 
-  console.log(`\n${passed}/${passed + failed} passed`);
+  const removed = await cleanupByOrderRef(["portfolio_"]);
+  console.log(`\n${passed}/${passed + failed} passed · cleaned up ${removed} test licence(s)`);
   process.exitCode = failed ? 1 : 0;
 }
 

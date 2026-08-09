@@ -1,4 +1,5 @@
 import { createHmac } from "node:crypto";
+import { cleanupByOrderRef } from "./_cleanup-helper";
 
 // End-to-end exercise of the licence lifecycle against a running server.
 //
@@ -195,7 +196,10 @@ async function main() {
     console_.status,
   );
 
-  console.log(`\n${passed}/${passed + failed} passed`);
+  // Remove what this run created, so a test never leaves a fake order behind
+  // to be counted as revenue later.
+  const removed = await cleanupByOrderRef(["wc_"]);
+  console.log(`\n${passed}/${passed + failed} passed · cleaned up ${removed} test licence(s)`);
   process.exitCode = failed ? 1 : 0;
 }
 

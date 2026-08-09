@@ -6,6 +6,7 @@ const DESTINATIONS = [
   { href: "/products", title: "Products", body: "What Astra Lab sells, and their licences." },
   { href: "/shop-data", title: "Shop data", body: "Catalogues synced from customer shops." },
   { href: "/leads", title: "Leads", body: "Enquiries captured on customer shops." },
+  { href: "/sales", title: "Sales", body: "Orders, revenue trend and export." },
   { href: "/finance", title: "Finance", body: "Earnings, expenses and net position." },
   { href: "/team", title: "Team", body: "Who can sign in, and what they may do." },
   { href: "/api-config", title: "API config", body: "Endpoints, secrets and the CMS public key." },

@@ -30,6 +30,7 @@ export type Permission =
   | "support.manage"
   | "shopdata.view"
   | "leads.view"
+  | "sales.view"
   | "finance.view"
   | "finance.manage"
   | "settings.manage"
@@ -47,6 +48,7 @@ const PERMISSIONS: Record<Role, Permission[]> = {
     "support.manage",
     "shopdata.view",
     "leads.view",
+    "sales.view",
     "finance.view",
     "finance.manage",
     "settings.manage",
@@ -84,6 +86,7 @@ export function visibleRoutes(role: string): string[] {
   if (can(role, "products.manage")) routes.push("/products");
   if (can(role, "shopdata.view")) routes.push("/shop-data");
   if (can(role, "leads.view")) routes.push("/leads");
+  if (can(role, "sales.view")) routes.push("/sales");
   if (can(role, "finance.view")) routes.push("/finance");
   if (can(role, "team.manage")) routes.push("/team");
   if (can(role, "apiconfig.view")) routes.push("/api-config");

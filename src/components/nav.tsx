@@ -33,6 +33,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/products", label: "Products", icon: "grid" },
   { href: "/shop-data", label: "Shop data", icon: "store" },
   { href: "/leads", label: "Leads", icon: "users" },
+  { href: "/sales", label: "Sales", icon: "chart" },
   { href: "/finance", label: "Finance", icon: "wallet" },
   { href: "/team", label: "Team", icon: "users" },
   { href: "/api-config", label: "API config", icon: "plug" },
@@ -53,6 +54,7 @@ function Icon({ name, className = "" }: { name: string; className?: string }) {
     grid: "M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z",
     store: "M3 9.5 4.5 4h15L21 9.5M3 9.5h18M3 9.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 3 0M5 12v8h14v-8",
     plug: "M9 3v6m6-6v6M6 9h12v3a6 6 0 0 1-12 0V9Zm6 9v3",
+    chart: "M4 20V10m5 10V4m5 16v-7m5 7V8",
     users: "M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM21 20v-1.5a4 4 0 0 0-3-3.87M16.5 3.6a4 4 0 0 1 0 7.75",
     wallet: "M3 8.5A2.5 2.5 0 0 1 5.5 6H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5.5A2.5 2.5 0 0 1 3 16.5v-8Zm0 0A2.5 2.5 0 0 1 5.5 6H18M16.5 12.5h.01",
     settings:

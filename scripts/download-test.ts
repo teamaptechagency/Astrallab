@@ -1,4 +1,5 @@
 import { createHmac, createHash } from "node:crypto";
+import { cleanupByOrderRef } from "./_cleanup-helper";
 
 // End-to-end package delivery: buy, activate, download, verify.
 //
@@ -49,7 +50,7 @@ async function main() {
 
   const token = act.download?.token as string | undefined;
   check("activation returned a download token", Boolean(token), act.download);
-  if (!token) return finish();
+  if (!token) return await finish();
 
   // --- whole file ---------------------------------------------------------
   const res = await fetch(`${BASE}/api/v1/download?token=${encodeURIComponent(token)}`);
@@ -93,11 +94,12 @@ async function main() {
   });
   check("token still works while the licence is valid", revoked.status === 206, revoked.status);
 
-  finish();
+  await finish();
 }
 
-function finish() {
-  console.log(`\n${passed}/${passed + failed} passed`);
+async function finish() {
+  const removed = await cleanupByOrderRef(["dl_"]);
+  console.log(`\n${passed}/${passed + failed} passed · cleaned up ${removed} test licence(s)`);
   process.exitCode = failed ? 1 : 0;
 }
 
