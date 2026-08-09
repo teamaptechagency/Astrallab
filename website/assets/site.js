@@ -141,3 +141,18 @@ if (billing && plans.length) {
 
   render("monthly");
 }
+
+/* ---- close the mobile menu after choosing something ---- */
+//
+// Without this the panel stays open over the section it just scrolled to, so
+// the visitor's first action after every tap is dismissing a menu.
+if (nav) {
+  for (const link of nav.querySelectorAll("a")) {
+    link.addEventListener("click", () => {
+      if (window.matchMedia("(max-width: 820px)").matches) {
+        nav.hidden = true;
+        toggle?.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+}

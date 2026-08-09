@@ -182,22 +182,46 @@
       <div class="center stack" style="margin-bottom:26px">
         <h2>Which plan fits</h2>
       </div>
-      <div class="table-scroll">
-        <table class="compare">
-          <thead>
-            <tr><th>What you get</th><th>Basic</th><th>Growth</th><th>Full service</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Updates and backups</td><td>✓</td><td>✓</td><td>✓</td></tr>
-            <tr><td>Uptime monitoring</td><td>✓</td><td>✓</td><td>✓</td></tr>
-            <tr><td>Product uploads</td><td>—</td><td>50 / month</td><td>Unlimited</td></tr>
-            <tr><td>Ongoing SEO</td><td>—</td><td>✓</td><td>✓</td></tr>
-            <tr><td>Pixel &amp; analytics upkeep</td><td>—</td><td>✓</td><td>✓</td></tr>
-            <tr><td>Ads managed</td><td>—</td><td>—</td><td>✓</td></tr>
-            <tr><td>Support speed</td><td>2 working days</td><td>Same working day</td><td>Within hours</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- Every cell carries data-label so the narrow layout can name the plan
+           it belongs to. Below 760px the table stops being a table and each
+           feature becomes its own block — three columns cannot be read at
+           375px, and sideways scrolling hides the two plans a visitor is
+           trying to compare against. -->
+      <table class="compare">
+        <thead>
+          <tr><th>What you get</th><th>Basic</th><th>Growth</th><th>Full service</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Updates and backups</td>
+            <td data-label="Basic">✓</td><td data-label="Growth">✓</td><td data-label="Full service">✓</td>
+          </tr>
+          <tr>
+            <td>Uptime monitoring</td>
+            <td data-label="Basic">✓</td><td data-label="Growth">✓</td><td data-label="Full service">✓</td>
+          </tr>
+          <tr>
+            <td>Product uploads</td>
+            <td data-label="Basic">—</td><td data-label="Growth">50 / month</td><td data-label="Full service">Unlimited</td>
+          </tr>
+          <tr>
+            <td>Ongoing SEO</td>
+            <td data-label="Basic">—</td><td data-label="Growth">✓</td><td data-label="Full service">✓</td>
+          </tr>
+          <tr>
+            <td>Pixel &amp; analytics upkeep</td>
+            <td data-label="Basic">—</td><td data-label="Growth">✓</td><td data-label="Full service">✓</td>
+          </tr>
+          <tr>
+            <td>Ads managed</td>
+            <td data-label="Basic">—</td><td data-label="Growth">—</td><td data-label="Full service">✓</td>
+          </tr>
+          <tr>
+            <td>Support speed</td>
+            <td data-label="Basic">2 working days</td><td data-label="Growth">Same working day</td><td data-label="Full service">Within hours</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </section>
 

@@ -281,11 +281,77 @@ a { color: inherit; }
 .plan .tick-list { margin-top: 16px; }
 .plan .btn { margin-top: auto; width: 100%; }
 
-/* ---- comparison table ---- */
-.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
-.compare { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 0.9375rem; }
+/* ---- comparison table ----
+   Wide enough for four columns only on a real screen. Below 760px it stops
+   being a table: each feature becomes a block listing all three plans. A
+   horizontally scrolling table hides exactly the columns someone is trying to
+   compare, and gives no hint they exist. */
+.compare {
+  width: 100%; border-collapse: collapse; font-size: 0.9375rem;
+  border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+}
 .compare th, .compare td { padding: 13px 16px; text-align: left; border-bottom: 1px solid var(--line); }
 .compare thead th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 600; }
 .compare td:not(:first-child), .compare th:not(:first-child) { text-align: center; }
 .compare tbody tr:last-child td { border-bottom: 0; }
 .compare td:first-child { color: var(--ink-2); }
+
+@media (max-width: 760px) {
+  .compare, .compare tbody, .compare tr, .compare td { display: block; width: 100%; }
+  /* The header row is redundant once every value names its own plan. */
+  .compare thead { display: none; }
+
+  .compare tr { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .compare tr:last-child { border-bottom: 0; }
+
+  .compare td { padding: 0; border: 0; text-align: left; }
+  .compare td:first-child {
+    font-weight: 600; color: var(--ink); margin-bottom: 8px;
+  }
+  .compare td:not(:first-child) {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    padding: 5px 0; text-align: right; color: var(--ink);
+  }
+  .compare td:not(:first-child)::before {
+    content: attr(data-label);
+    color: var(--ink-3); font-size: 0.8125rem; text-align: left;
+  }
+}
+
+/* ---- UX corrections ---- */
+
+/* Anchor targets sit under the sticky header without this: clicking "Pricing"
+   scrolls the section to y=0, which is 68px behind the bar. */
+[id] { scroll-margin-top: 88px; }
+
+html { scroll-behavior: smooth; }
+
+/* Visible keyboard focus. The browser default is removed by nothing here, but
+   it is nearly invisible against the brand green, so state it explicitly. */
+:where(a, button, summary, input, select, textarea):focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Touch targets. 40px is the practical floor for a thumb; the nav links and
+   FAQ summaries were comfortably smaller than that on a phone. */
+@media (max-width: 820px) {
+  .nav a { padding: 12px; }
+  .faq summary { padding: 4px 0; }
+}
+
+/* Respect a reduced-motion preference — the loading pulse and smooth scroll
+   are exactly the kind of movement that setting exists to stop. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .skeleton { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}
+
+/* The plan strapline reserves two lines to keep the three cards' prices on the
+   same baseline. Stacked on mobile there is nothing to align with, and the gap
+   just looks like a mistake. */
+@media (max-width: 760px) {
+  .plan-for { min-height: 0; }
+}

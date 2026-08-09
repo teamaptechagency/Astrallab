@@ -38,7 +38,13 @@ createServer(async (req, res) => {
 
   try {
     const body = await readFile(filePath);
-    res.writeHead(200, { "Content-Type": TYPES[extname(filePath)] ?? "application/octet-stream" });
+    res.writeHead(200, {
+      "Content-Type": TYPES[extname(filePath)] ?? "application/octet-stream",
+      // Without this the browser applies heuristic caching and keeps serving
+      // an old stylesheet or script after an edit — which reads as "my change
+      // did nothing" and sends you hunting for a bug that isn't there.
+      "Cache-Control": "no-store, must-revalidate",
+    });
     res.end(body);
   } catch {
     res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
