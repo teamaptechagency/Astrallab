@@ -46,8 +46,19 @@ export default async function ProductsPage() {
             />
           </label>
           <label className="text-sm sm:col-span-2">
-            <span className="mb-1 block text-ink-500">Description</span>
-            <input name="description" placeholder="Internal note — not shown to customers." className="field" />
+            <span className="mb-1 block text-ink-500">Public summary</span>
+            <input
+              name="summary"
+              placeholder="One line shown on astralab.com"
+              className="field"
+            />
+            <span className="mt-1 block text-xs text-ink-400">
+              Served by the public catalogue API that the storefront reads.
+            </span>
+          </label>
+          <label className="text-sm sm:col-span-2">
+            <span className="mb-1 block text-ink-500">Internal note</span>
+            <input name="description" placeholder="Never leaves this console." className="field" />
           </label>
           <div className="sm:col-span-2">
             <button className="btn-primary">Add product</button>

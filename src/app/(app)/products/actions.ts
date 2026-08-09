@@ -29,11 +29,13 @@ export async function createProduct(formData: FormData) {
       name,
       slug,
       description: String(formData.get("description") ?? "").trim(),
+      summary: String(formData.get("summary") ?? "").trim(),
     },
   });
 
   revalidatePath("/products");
   revalidatePath("/releases");
+  revalidatePath("/api/public/products");
 }
 
 export async function toggleProductActive(formData: FormData) {

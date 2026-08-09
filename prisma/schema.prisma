@@ -24,7 +24,12 @@ model Product {
   // install in the field sends this string on every request.
   slug        String   @unique
   name        String
+  // Internal note. Never leaves the console.
   description String   @default("")
+  // Customer-facing copy, served by the public catalogue API that
+  // astralab.com renders from. Separate from `description` so an internal
+  // remark can never end up on the storefront by accident.
+  summary     String   @default("")
   // Retired products keep working for existing installs — activation and
   // updates still function — but the store should stop selling them. Nothing
   // is ever deleted, because licences reference it forever.
