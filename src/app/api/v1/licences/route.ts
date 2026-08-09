@@ -54,6 +54,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "unknown_product" }, { status: 404 });
   }
 
+  // The store holds the only credential that can mint licences, and it is a
+  // WordPress site — the most attacked software on the web. Assume it will be
+  // compromised eventually and make that survivable: a ceiling on issuance per
+  // hour turns "attacker mints unlimited licences" into "attacker mints a
+  // handful, and we get an alarm".
+  //
+  // Deliberately checked before the duplicate lookup, so a flood of repeat
+  // calls can't slip past it either.
+  const limit = Number(process.env.ISSUE_RATE_LIMIT_PER_HOUR ?? 30);
+  const recentCount = await db.licence.count({
+    where: { createdAt: { gt: new Date(Date.now() - 60 * 60_000) } },
+  });
+  if (recentCount >= limit) {
+    console.error(
+      `[astralab] issuance rate limit hit: ${recentCount} licences in the last hour (limit ${limit}). Possible store compromise.`,
+    );
+    // 503 rather than 429: the store's retry logic should back off and try
+    // again, because a genuine sales spike must not lose a paying customer
+    // their licence. A human needs to look at this either way.
+    return NextResponse.json({ error: "rate_limited" }, { status: 503 });
+  }
+
   const existing = await db.licence.findUnique({
     where: {
       orderSource_orderRef: { orderSource: input.orderSource, orderRef: input.orderRef },

@@ -103,6 +103,7 @@ model Licence {
 
   activations Activation[]
   events      LicenceEvent[]
+  ayojonLinks AyojonLink[]
 
   @@unique([orderSource, orderRef])
   @@index([customerEmail])
@@ -129,6 +130,8 @@ model Activation {
   lastSeenAt  DateTime  @default(now())
   createdAt   DateTime  @default(now())
 
+  ayojonLinks AyojonLink[]
+
   @@index([licenceId])
   @@index([domain])
 }
@@ -139,7 +142,7 @@ model LicenceEvent {
   id        String  @id @default(cuid())
   licenceId String
   licence   Licence @relation(fields: [licenceId], references: [id], onDelete: Cascade)
-  // kind: issued | activated | deactivated | blocked | heartbeat | status_changed
+  // kind: issued | activated | deactivated | blocked | downloaded | status_changed
   kind      String
   domain    String?
   detail    String?
@@ -147,4 +150,60 @@ model LicenceEvent {
   createdAt DateTime @default(now())
 
   @@index([licenceId, createdAt])
+  @@index([kind, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Future Ayojon integration — deliberately dormant
+// ---------------------------------------------------------------------------
+
+// Runtime switches the hub owns, so behaviour can change without a deploy.
+// The one that matters today is `ayojon.status`: every CMS install asks the
+// hub whether Ayojon exists yet, and shows "coming soon" or a connect button
+// based on the answer. That means Ayojon can be switched on for everyone from
+// here, with no update shipped to a single customer site.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// The link between one CMS install and one Ayojon account.
+//
+// Nothing writes to this yet — Ayojon has no API to connect to. It exists now
+// so the shape is settled while it is still free to change: once thousands of
+// installs are live, adding an integration means a schema migration and a
+// CMS update rolled out to all of them.
+//
+// The design follows the agreed policy: one Ayojon account may link many
+// stores, each store keeps its own licence, and the user chooses what syncs.
+model AyojonLink {
+  id           String     @id @default(cuid())
+  licenceId    String
+  licence      Licence    @relation(fields: [licenceId], references: [id], onDelete: Cascade)
+  activationId String?
+  activation   Activation? @relation(fields: [activationId], references: [id])
+
+  // Opaque identifiers from Ayojon's side. Not foreign keys — Ayojon is a
+  // separate system with its own database.
+  ayojonUserId     String
+  ayojonBusinessId String?
+
+  // Comma-separated consent scopes the user actually granted, e.g.
+  // "products,inventory". Absent means denied — never assume a default, since
+  // this governs whose data moves where.
+  scopes String @default("")
+
+  // Short-lived access token plus refresh, stored hashed for the same reason
+  // licence keys are: a dump of this table must not yield working credentials.
+  accessTokenHash  String?
+  refreshTokenHash String?
+  expiresAt        DateTime?
+
+  connectedAt DateTime  @default(now())
+  revokedAt   DateTime?
+  lastSyncAt  DateTime?
+
+  @@unique([licenceId, ayojonUserId])
+  @@index([ayojonUserId])
 }

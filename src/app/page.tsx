@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { getAyojonState } from "@/lib/settings";
 
 // Operator console. Read-only for now — enough to see whether the system is
 // behaving (who activated, who was blocked, what versions are in the wild)
@@ -15,6 +16,7 @@ const STATUS_COLOUR: Record<string, string> = {
 };
 
 export default async function ConsolePage() {
+  const ayojon = await getAyojonState();
   const [licences, releases, events] = await Promise.all([
     db.licence.findMany({
       include: { product: true, activations: { where: { releasedAt: null } } },
@@ -32,6 +34,24 @@ export default async function ConsolePage() {
       <h1 style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>manage.astralab</h1>
       <p style={{ color: "#8b93a7", marginTop: 6 }}>
         Licence, activation and update hub · {licences.length} licences · {active} active
+      </p>
+
+      <p
+        style={{
+          marginTop: 14,
+          padding: "10px 14px",
+          border: "1px solid #1e2740",
+          borderRadius: 8,
+          color: "#8b93a7",
+          fontSize: 14,
+        }}
+      >
+        Ayojon integration:{" "}
+        <strong style={{ color: ayojon.status === "available" ? "#3ddc97" : "#f4b942" }}>
+          {ayojon.status.replace("_", " ")}
+        </strong>{" "}
+        — every install reads this from the hub, so switching it here reaches all of them without
+        an update.
       </p>
 
       <Section title="Licences">

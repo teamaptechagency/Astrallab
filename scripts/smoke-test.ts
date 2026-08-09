@@ -148,6 +148,53 @@ async function main() {
   });
   check("licence can move to a new domain after release", moved.json.ok === true, moved.json);
 
+  // --- package download ----------------------------------------------------
+  const token = moved.json.download?.token as string | undefined;
+  check("activation on the new domain returns a download token", typeof token === "string");
+
+  const forged = await fetch(`${BASE}/api/v1/download?token=${encodeURIComponent("aaaa.bbbb")}`);
+  check("forged download token is rejected", forged.status === 403, forged.status);
+
+  const noToken = await fetch(`${BASE}/api/v1/download`);
+  check("download without a token is rejected", noToken.status === 400, noToken.status);
+
+  if (token) {
+    const dl = await fetch(`${BASE}/api/v1/download?token=${encodeURIComponent(token)}`);
+    // The seeded releases have no uploaded artefact, so 503 is the correct,
+    // honest answer here — it proves the token verified and the licence passed
+    // every check, and only the file itself is missing.
+    check(
+      "valid token passes every check and reaches the package stage",
+      dl.status === 503 || dl.status === 200,
+      dl.status,
+    );
+  }
+
+  // --- integrations (Ayojon connection space) ------------------------------
+  const integ = await post("/api/v1/integrations", { licenceKey: key, domain: "newshop.com" });
+  check("integrations endpoint answers", integ.status === 200 && integ.json.ok === true, integ.json);
+  check(
+    "Ayojon is advertised as coming soon, not connectable",
+    integ.json.integrations?.ayojon?.status === "coming_soon" &&
+      integ.json.integrations?.ayojon?.connectUrl === null,
+    integ.json.integrations?.ayojon,
+  );
+  check("no Ayojon link exists yet", integ.json.integrations?.ayojon?.connected === false);
+
+  const integWrongDomain = await post("/api/v1/integrations", {
+    licenceKey: key,
+    domain: "someone-else.com",
+  });
+  check("integrations refuses an unbound domain", integWrongDomain.status === 409, integWrongDomain.status);
+
+  // --- console is not public ----------------------------------------------
+  const console_ = await fetch(`${BASE}/`, { redirect: "manual" });
+  check(
+    "operator console redirects anonymous visitors to login",
+    console_.status === 307 || console_.status === 302,
+    console_.status,
+  );
+
   console.log(`\n${passed}/${passed + failed} passed`);
   process.exitCode = failed ? 1 : 0;
 }
