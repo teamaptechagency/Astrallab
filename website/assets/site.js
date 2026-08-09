@@ -22,7 +22,11 @@ if (toggle && nav) {
   });
 
   window.addEventListener("resize", () => {
-    nav.hidden = isMobile() ? nav.hidden : false;
+    // Crossing the breakpoint resets to that layout's default: collapsed on
+    // mobile, always-visible on desktop. Preserving the previous state left
+    // the panel stuck open over the page after a rotation or a window resize.
+    nav.hidden = isMobile();
+    toggle.setAttribute("aria-expanded", String(!isMobile()));
   });
 }
 
@@ -39,25 +43,44 @@ function escapeHtml(value) {
 function productCard(product) {
   const available = product.available;
   const size = product.downloadSizeBytes
-    ? ` · ${(product.downloadSizeBytes / 1048576).toFixed(1)} MB`
-    : "";
+    ? `${(product.downloadSizeBytes / 1048576).toFixed(1)} MB`
+    : null;
+
+  // Pills only appear when there is something true to put in them. An empty
+  // pill, or one reading "unknown", is worse than no pill at all.
+  const meta = available
+    ? [`v${escapeHtml(product.latestVersion)}`, size, "Free updates", "One-time payment"]
+    : ["In development", "Same licence, same updates"];
 
   return `
-    <article class="product">
-      <div class="product-top">
-        <h3>${escapeHtml(product.name)}</h3>
-        <span class="product-status${available ? "" : " product-status--soon"}">
-          ${available ? "Available" : "Coming soon"}
-        </span>
+    <article class="product${available ? "" : " product--soon"}">
+      <div class="product-head">
+        <span class="product-mark" aria-hidden="true">${escapeHtml(product.name.charAt(0))}</span>
+        <div class="product-title">
+          <h3>${escapeHtml(product.name)}</h3>
+          <span class="product-status${available ? "" : " product-status--soon"}">
+            ${available ? "Available now" : "Coming soon"}
+          </span>
+        </div>
       </div>
-      <p style="color:var(--ink-2);font-size:.9375rem">${escapeHtml(product.summary || "")}</p>
-      <p class="product-version">
-        ${available ? `v${escapeHtml(product.latestVersion)}${size}` : "Not released yet"}
-      </p>
+
+      <p class="product-summary">${escapeHtml(product.summary || "")}</p>
+
+      <ul class="product-meta">
+        ${meta.filter(Boolean).map((m) => `<li>${m}</li>`).join("")}
+      </ul>
+
       ${
         available
-          ? `<a class="btn btn--primary" href="/shop/">Buy now</a>`
-          : `<span class="btn btn--ghost" aria-disabled="true">Not yet on sale</span>`
+          ? `${
+              product.releaseNotes
+                ? `<p class="product-latest"><strong>Latest release:</strong> ${escapeHtml(product.releaseNotes)}</p>`
+                : ""
+            }
+            <a class="btn btn--primary product-cta" href="/shop/">Buy now</a>`
+          : // Not a dead grey button. Someone reading an unreleased product's
+            // card is a lead worth capturing rather than a dead end.
+            `<a class="btn btn--ghost product-cta" href="/contact/">Tell me when it is ready</a>`
       }
     </article>`;
 }

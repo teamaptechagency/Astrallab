@@ -36,7 +36,7 @@ export async function GET() {
     include: {
       releases: {
         where: { published: true, channel: "stable" },
-        select: { version: true, notes: true, createdAt: true, sizeBytes: true },
+        select: { version: true, notes: true, severity: true, createdAt: true, sizeBytes: true },
       },
     },
     orderBy: { createdAt: "asc" },
@@ -53,7 +53,16 @@ export async function GET() {
       summary: p.summary,
       latestVersion: latest?.version ?? null,
       releasedAt: latest?.createdAt ?? null,
-      releaseNotes: latest?.notes ?? null,
+      // Security release notes are withheld from the public catalogue.
+      //
+      // They are written for customers inside their own admin, where naming
+      // the flaw is exactly right — it tells them why to update now. On a
+      // public shop window the same sentence is a roadmap: it tells anyone
+      // which vulnerability to go looking for on every install that has not
+      // updated yet, and those are the installs least able to defend
+      // themselves. The version number still changes, so the storefront still
+      // shows that something shipped.
+      releaseNotes: latest && latest.severity !== "security" ? latest.notes : null,
       downloadSizeBytes: latest?.sizeBytes ?? null,
       // A product with nothing published cannot be installed even if someone
       // buys it, so the storefront should not offer it for sale yet.

@@ -174,15 +174,39 @@ a { color: inherit; }
   background: var(--brand); color: #fff; font-weight: 650; font-size: 0.875rem;
 }
 
-/* ---- product cards, filled from the hub API ---- */
+/* ---- product cards, filled from the hub API ----
+   Two products stretched across 1120px left each card 530px wide and almost
+   empty. The grid is capped so cards stay a readable width and the section
+   reads as a considered shelf rather than a gap. */
+#product-grid { max-width: 880px; margin-inline: auto; gap: 20px; }
+
 .product {
-  display: flex; flex-direction: column; gap: 10px;
-  border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; background: var(--surface);
+  display: flex; flex-direction: column; gap: 14px;
+  border: 1px solid var(--line); border-radius: 16px; padding: 26px;
+  background: var(--surface); transition: border-color .15s, transform .15s, box-shadow .15s;
 }
-.product-top { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
-.product-version { font-size: 0.75rem; color: var(--ink-3); font-family: ui-monospace, monospace; }
+.product:hover {
+  border-color: var(--brand);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -28px rgba(0,0,0,.45);
+}
+/* An unreleased product should read as quieter than a purchasable one without
+   looking broken or disabled. */
+.product--soon { background: var(--surface-2); }
+.product--soon:hover { border-color: var(--line); transform: none; box-shadow: none; }
+
+.product-head { display: flex; align-items: center; gap: 14px; }
+.product-mark {
+  flex: none; width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center;
+  background: var(--brand); color: #fff; font-size: 1.25rem; font-weight: 700;
+}
+.product--soon .product-mark { background: var(--ink-3); }
+.product-title { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.product-title h3 { margin: 0; }
+
 .product-status {
-  font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  align-self: start; font-size: 0.6875rem; padding: 3px 9px; border-radius: 999px;
+  font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
   background: var(--brand-tint); color: var(--brand-dark);
 }
 .product-status--soon { background: #fdf3e2; color: #8a5a08; }
@@ -190,7 +214,25 @@ a { color: inherit; }
   .product-status { color: var(--brand); }
   .product-status--soon { background: #33260c; color: #f0b34a; }
 }
-.product .btn { margin-top: auto; }
+
+.product-summary { color: var(--ink-2); font-size: 0.9375rem; }
+
+.product-meta { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.product-meta li {
+  font-size: 0.75rem; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--ink-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.product-latest {
+  font-size: 0.8125rem; color: var(--ink-2);
+  border-left: 2px solid var(--brand); padding-left: 12px;
+}
+.product-latest strong { color: var(--ink); font-weight: 600; }
+
+/* Pushed to the bottom so both cards' buttons align even when one has a
+   release note and the other does not. */
+.product-cta { margin-top: auto; }
 .skeleton {
   border-radius: 8px; background: var(--surface-2); color: transparent;
   animation: pulse 1.4s ease-in-out infinite;
