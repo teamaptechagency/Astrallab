@@ -1,0 +1,234 @@
+/* astralab.com — storefront styles.
+ *
+ * Hand-written rather than a framework: this is a handful of pages that will
+ * be pasted into WordPress templates, and a build step there means a build
+ * step every time someone edits a headline.
+ *
+ * Everything is driven by the custom properties below, so recolouring the
+ * whole site — or matching a WordPress theme later — is one block. */
+
+:root {
+  --brand: #12a06d;
+  --brand-dark: #0d7e57;
+  --brand-tint: #eefbf4;
+  --ink: #161a26;
+  --ink-2: #4c5468;
+  --ink-3: #8b93a7;
+  --line: #e4e7ee;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --radius: 14px;
+  --max: 1120px;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --brand: #2ec98a;
+    --brand-dark: #3ddc97;
+    --brand-tint: #0c2b20;
+    --ink: #eef0f4;
+    --ink-2: #b9c0d4;
+    --ink-3: #8b93a7;
+    --line: #232838;
+    --surface: #0f1320;
+    --surface-2: #0a0d16;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--surface);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { line-height: 1.2; letter-spacing: -0.02em; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.25rem); font-weight: 700; }
+h2 { font-size: clamp(1.5rem, 3.2vw, 2.1rem); font-weight: 650; }
+h3 { font-size: 1.0625rem; font-weight: 600; }
+p { margin: 0; }
+a { color: inherit; }
+
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+.section { padding: 72px 0; }
+.section--tint { background: var(--surface-2); }
+.center { text-align: center; }
+.lede { color: var(--ink-2); font-size: 1.0625rem; max-width: 58ch; }
+.center .lede { margin-inline: auto; }
+.eyebrow {
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--brand);
+}
+.stack > * + * { margin-top: 14px; }
+
+/* ---- header ---- */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.site-header .wrap {
+  display: flex; align-items: center; gap: 20px; height: 68px;
+}
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 650; text-decoration: none; }
+.logo-mark {
+  width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center;
+  background: var(--brand); color: #fff; font-weight: 700; font-size: 0.9rem;
+}
+.logo-sub { display: block; font-size: 0.6875rem; font-weight: 400; color: var(--ink-3); }
+.nav { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.nav a {
+  padding: 8px 12px; border-radius: 8px; text-decoration: none;
+  color: var(--ink-2); font-size: 0.9375rem;
+}
+.nav a:hover { background: var(--surface-2); color: var(--ink); }
+.nav-toggle { display: none; }
+
+@media (max-width: 820px) {
+  .nav {
+    position: absolute; inset: 68px 0 auto; flex-direction: column; align-items: stretch;
+    background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px 20px 16px;
+    gap: 2px;
+  }
+  /* Collapsed by default; the checkbox hack keeps this scriptless, so the menu
+     still opens if the JS that fetches the catalogue fails to load. */
+  .nav[hidden] { display: none; }
+  .nav-toggle {
+    display: grid; place-items: center; margin-left: auto;
+    width: 40px; height: 40px; border: 1px solid var(--line);
+    border-radius: 10px; background: var(--surface); cursor: pointer;
+  }
+  .nav .btn { margin-top: 8px; }
+}
+
+/* ---- buttons ---- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 20px; border-radius: 10px; font-weight: 600; font-size: 0.9375rem;
+  text-decoration: none; border: 1px solid transparent; cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.btn--primary { background: var(--brand); color: #fff; }
+.btn--primary:hover { background: var(--brand-dark); }
+.btn--ghost { border-color: var(--line); color: var(--ink); background: var(--surface); }
+.btn--ghost:hover { background: var(--surface-2); }
+.btn--lg { padding: 14px 26px; font-size: 1rem; }
+
+/* ---- hero ---- */
+.hero { padding: 84px 0 64px; }
+.hero-grid { display: grid; gap: 44px; align-items: center; }
+@media (min-width: 900px) { .hero-grid { grid-template-columns: 1.05fr 0.95fr; } }
+.hero h1 { margin-top: 14px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.hero-note { margin-top: 16px; font-size: 0.875rem; color: var(--ink-3); }
+
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+.badge {
+  font-size: 0.8125rem; padding: 6px 12px; border-radius: 999px;
+  background: var(--brand-tint); color: var(--brand-dark); font-weight: 550;
+}
+@media (prefers-color-scheme: dark) { .badge { color: var(--brand); } }
+
+/* Terminal-style panel — shows the install being a few commands rather than
+   a project, which is the whole pitch. */
+.terminal {
+  background: #0d1018; border: 1px solid #232838; border-radius: var(--radius);
+  overflow: hidden; box-shadow: 0 20px 50px -30px rgba(0,0,0,.55);
+}
+.terminal-bar { display: flex; gap: 6px; padding: 12px 14px; border-bottom: 1px solid #232838; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: #333a4d; }
+.terminal pre {
+  margin: 0; padding: 18px; overflow-x: auto;
+  font: 0.8125rem/1.75 ui-monospace, SFMono-Regular, Menlo, monospace; color: #c9d2e3;
+}
+.terminal .c { color: #6b768e; }
+.terminal .g { color: #3ddc97; }
+
+/* ---- cards / grids ---- */
+.grid { display: grid; gap: 18px; }
+.grid--3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.grid--2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 22px;
+}
+.card h3 { margin-bottom: 6px; }
+.card p { color: var(--ink-2); font-size: 0.9375rem; }
+.card-icon {
+  width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+  background: var(--brand-tint); color: var(--brand-dark); margin-bottom: 14px;
+}
+@media (prefers-color-scheme: dark) { .card-icon { color: var(--brand); } }
+
+/* ---- steps ---- */
+.steps { counter-reset: step; }
+.step { display: flex; gap: 16px; }
+.step-num {
+  flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--brand); color: #fff; font-weight: 650; font-size: 0.875rem;
+}
+
+/* ---- product cards, filled from the hub API ---- */
+.product {
+  display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; background: var(--surface);
+}
+.product-top { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.product-version { font-size: 0.75rem; color: var(--ink-3); font-family: ui-monospace, monospace; }
+.product-status {
+  font-size: 0.75rem; padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  background: var(--brand-tint); color: var(--brand-dark);
+}
+.product-status--soon { background: #fdf3e2; color: #8a5a08; }
+@media (prefers-color-scheme: dark) {
+  .product-status { color: var(--brand); }
+  .product-status--soon { background: #33260c; color: #f0b34a; }
+}
+.product .btn { margin-top: auto; }
+.skeleton {
+  border-radius: 8px; background: var(--surface-2); color: transparent;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse { 50% { opacity: .55; } }
+
+/* ---- pricing ---- */
+.price-card { border: 2px solid var(--brand); border-radius: 18px; padding: 32px; text-align: center; }
+.price { font-size: 3rem; font-weight: 700; letter-spacing: -0.03em; }
+.price small { font-size: 1rem; font-weight: 400; color: var(--ink-3); }
+.tick-list { list-style: none; padding: 0; margin: 22px 0 0; text-align: left; display: grid; gap: 10px; }
+.tick-list li { display: flex; gap: 10px; font-size: 0.9375rem; color: var(--ink-2); }
+.tick { color: var(--brand); flex: none; }
+
+/* ---- faq ---- */
+.faq { border-top: 1px solid var(--line); }
+.faq details { border-bottom: 1px solid var(--line); padding: 18px 0; }
+.faq summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--ink-3); font-weight: 400; }
+.faq details[open] summary::after { content: "−"; }
+.faq p { margin-top: 10px; color: var(--ink-2); font-size: 0.9375rem; max-width: 70ch; }
+
+/* ---- cta / footer ---- */
+.cta { background: var(--brand); color: #fff; border-radius: 18px; padding: 48px 32px; text-align: center; }
+.cta h2, .cta p { color: #fff; }
+.cta .btn--ghost { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.3); color: #fff; }
+.cta .btn--ghost:hover { background: rgba(255,255,255,.2); }
+
+.site-footer { border-top: 1px solid var(--line); padding: 44px 0; color: var(--ink-3); font-size: 0.875rem; }
+.footer-grid { display: grid; gap: 28px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.footer-grid h4 { font-size: 0.8125rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); margin: 0 0 12px; }
+.footer-grid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.footer-grid a { text-decoration: none; }
+.footer-grid a:hover { color: var(--brand); }
+.footer-bottom { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
