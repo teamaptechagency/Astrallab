@@ -81,14 +81,30 @@ a site ends up half-migrated.
 **Security releases shorten the client's check interval** from 24 hours to 1,
 because a patch reaches sites only as fast as they poll.
 
+### Ayojon connection space
+
+`POST /integrations` tells each install what to show on its Integrations page.
+Ayojon reports `coming_soon` today and nothing can connect — but the *channel*
+exists, so the day Ayojon is ready it is switched on for every customer by
+changing one row in `Setting`, with no update shipped to a single site.
+
+Building this later would mean rolling a CMS update to every install in the
+field just to teach it that Ayojon exists — and installs that never update
+would never learn. `AyojonLink` is modelled for the same reason: the shape is
+free to change now and expensive to change once thousands of sites are live.
+
 ## Not built yet
 
-- Admin authentication — the console at `/` is currently open. It must be
-  gated before this is deployed anywhere reachable.
-- Package upload and the actual signed-link download endpoint (tokens are
-  minted; nothing serves them yet).
+- **Package upload.** `packages/` is served but nothing writes to it; release
+  artefacts must be placed there by hand. `/download` returns 503 until then.
+- Reconciliation — comparing licences issued against real WooCommerce orders,
+  to catch a compromised store minting extras.
 - Product sync, support tickets, design assignment.
-- The WooCommerce plugin that calls `POST /licences`.
+- The Ayojon OAuth flow itself (blocked on Ayojon having an API).
+
+The WooCommerce plugin lives in `woocommerce-plugin/` with setup instructions.
+**It has never been executed** — there is no PHP runtime on the machine it was
+written on.
 
 ## Stack
 
