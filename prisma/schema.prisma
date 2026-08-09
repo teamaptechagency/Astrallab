@@ -17,11 +17,19 @@ datasource db {
 // A thing sold on astralab.com. One row per sellable product (the CMS today,
 // premium themes and modules later).
 model Product {
-  id        String   @id @default(cuid())
-  // Stable machine key the installer sends, e.g. "astralab-cms".
-  slug      String   @unique
-  name      String
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  // Stable machine key the installer sends, e.g. "astralab-cms". Set on the
+  // matching WooCommerce product too — that pairing is what makes a sale
+  // issue the right licence. Never change it once anything is sold: every
+  // install in the field sends this string on every request.
+  slug        String   @unique
+  name        String
+  description String   @default("")
+  // Retired products keep working for existing installs — activation and
+  // updates still function — but the store should stop selling them. Nothing
+  // is ever deleted, because licences reference it forever.
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
 
   releases Release[]
   licences Licence[]

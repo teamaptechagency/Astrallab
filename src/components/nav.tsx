@@ -22,12 +22,16 @@ export interface NavItem {
   primary?: boolean;
 }
 
+// "Products" means what Astra Lab sells. Data synced up from customer shops
+// lives under "Shop data" — the two were both called products at first, which
+// made every conversation about them ambiguous.
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", icon: "home", primary: true },
   { href: "/licences", label: "Licences", icon: "key", primary: true },
   { href: "/releases", label: "Releases", icon: "package", primary: true },
   { href: "/support", label: "Support", icon: "life-buoy", primary: true },
   { href: "/products", label: "Products", icon: "grid" },
+  { href: "/shop-data", label: "Shop data", icon: "store" },
   { href: "/leads", label: "Leads", icon: "users" },
   { href: "/finance", label: "Finance", icon: "wallet" },
   { href: "/settings", label: "Settings", icon: "settings" },
@@ -45,6 +49,7 @@ function Icon({ name, className = "" }: { name: string; className?: string }) {
     package: "M12 3 4 7v10l8 4 8-4V7l-8-4Zm0 0v18M4 7l8 4 8-4",
     "life-buoy": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-5.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm2.5-6 3-3m-9 9-3 3m9 0 3 3m-9-9-3-3",
     grid: "M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z",
+    store: "M3 9.5 4.5 4h15L21 9.5M3 9.5h18M3 9.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 3 0M5 12v8h14v-8",
     users: "M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM21 20v-1.5a4 4 0 0 0-3-3.87M16.5 3.6a4 4 0 0 1 0 7.75",
     wallet: "M3 8.5A2.5 2.5 0 0 1 5.5 6H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5.5A2.5 2.5 0 0 1 3 16.5v-8Zm0 0A2.5 2.5 0 0 1 5.5 6H18M16.5 12.5h.01",
     settings:

@@ -8,7 +8,8 @@ export default function MorePage() {
       <PageHeader title="More" subtitle="Everything not on the tab bar" />
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <CardLink href="/products" title="Products" body="Catalogues synced from customer shops." />
+        <CardLink href="/products" title="Products" body="What Astra Lab sells, and their licences." />
+        <CardLink href="/shop-data" title="Shop data" body="Catalogues synced from customer shops." />
         <CardLink href="/leads" title="Leads" body="Enquiries captured on customer shops." />
         <CardLink href="/finance" title="Finance" body="Earnings, expenses and net position." />
         <CardLink href="/settings" title="Settings" body="Ayojon integration and hub switches." />
