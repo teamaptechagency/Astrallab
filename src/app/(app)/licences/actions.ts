@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireOperator } from "@/lib/require-operator";
+import { requirePermission } from "@/lib/operator-session";
 
 const ALLOWED = new Set(["active", "suspended", "revoked"]);
 
@@ -14,11 +14,14 @@ const ALLOWED = new Set(["active", "suspended", "revoked"]);
  * question asked after a customer complains their site stopped working.
  */
 export async function setLicenceStatus(formData: FormData) {
-  await requireOperator();
-
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "");
   if (!id || !ALLOWED.has(status)) return;
+
+  // Revoking is terminal and takes a customer's storefront down for good;
+  // suspending is reversible. Support handles payment disputes daily and needs
+  // the second without ever being one misclick from the first.
+  const me = await requirePermission(status === "revoked" ? "licences.revoke" : "licences.suspend");
 
   const licence = await db.licence.findUnique({ where: { id }, select: { status: true } });
   if (!licence) return;
@@ -28,7 +31,10 @@ export async function setLicenceStatus(formData: FormData) {
     data: {
       licenceId: id,
       kind: "status_changed",
-      detail: `${licence.status} → ${status} (operator)`,
+      detail: `${licence.status} → ${status}`,
+      // Previously this said "(operator)" and meant nothing, because a single
+      // shared password could not tell anyone apart.
+      actor: `${me.name} <${me.email}>`,
     },
   });
 

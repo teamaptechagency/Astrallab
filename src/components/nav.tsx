@@ -34,6 +34,8 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/shop-data", label: "Shop data", icon: "store" },
   { href: "/leads", label: "Leads", icon: "users" },
   { href: "/finance", label: "Finance", icon: "wallet" },
+  { href: "/team", label: "Team", icon: "users" },
+  { href: "/api-config", label: "API config", icon: "plug" },
   { href: "/settings", label: "Settings", icon: "settings" },
 ];
 
@@ -50,6 +52,7 @@ function Icon({ name, className = "" }: { name: string; className?: string }) {
     "life-buoy": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-5.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm2.5-6 3-3m-9 9-3 3m9 0 3 3m-9-9-3-3",
     grid: "M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z",
     store: "M3 9.5 4.5 4h15L21 9.5M3 9.5h18M3 9.5a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 3 0M5 12v8h14v-8",
+    plug: "M9 3v6m6-6v6M6 9h12v3a6 6 0 0 1-12 0V9Zm6 9v3",
     users: "M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM21 20v-1.5a4 4 0 0 0-3-3.87M16.5 3.6a4 4 0 0 1 0 7.75",
     wallet: "M3 8.5A2.5 2.5 0 0 1 5.5 6H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5.5A2.5 2.5 0 0 1 3 16.5v-8Zm0 0A2.5 2.5 0 0 1 5.5 6H18M16.5 12.5h.01",
     settings:
@@ -72,8 +75,15 @@ function Icon({ name, className = "" }: { name: string; className?: string }) {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({
+  operator,
+  allowed,
+}: {
+  operator: { name: string; email: string; role: string };
+  allowed: string[];
+}) {
   const pathname = usePathname();
+  const items = NAV_ITEMS.filter((i) => allowed.includes(i.href));
 
   return (
     <aside className="hidden w-60 shrink-0 border-r border-ink-200 bg-white lg:flex lg:flex-col dark:border-ink-800 dark:bg-ink-900">
@@ -88,7 +98,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-0.5 px-3 py-2">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <Link
@@ -108,25 +118,42 @@ export function Sidebar() {
         })}
       </nav>
 
-      <form action="/api/admin/logout" method="post" className="border-t border-ink-200 p-3 dark:border-ink-800">
-        <button type="submit" className="btn-ghost w-full">
-          Sign out
-        </button>
-      </form>
+      <div className="border-t border-ink-200 p-3 dark:border-ink-800">
+        <Link
+          href="/profile"
+          className="mb-2 block rounded-lg px-3 py-2 text-sm hover:bg-ink-50 dark:hover:bg-ink-800"
+        >
+          <span className="block truncate font-medium">{operator.name}</span>
+          <span className="block truncate text-[11px] text-ink-400">
+            {operator.email} · {operator.role}
+          </span>
+        </Link>
+        <form action="/api/admin/logout" method="post">
+          <button type="submit" className="btn-ghost w-full">
+            Sign out
+          </button>
+        </form>
+      </div>
     </aside>
   );
 }
 
-export function MobileTabs() {
+export function MobileTabs({ allowed }: { allowed: string[] }) {
   const pathname = usePathname();
-  const primary = NAV_ITEMS.filter((i) => i.primary);
+  const primary = NAV_ITEMS.filter((i) => i.primary && allowed.includes(i.href));
   const moreActive = NAV_ITEMS.some((i) => !i.primary && isActive(pathname, i.href));
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-ink-200 bg-white/95 backdrop-blur lg:hidden dark:border-ink-800 dark:bg-ink-900/95"
+      className="fixed inset-x-0 bottom-0 z-40 grid border-t border-ink-200 bg-white/95 backdrop-blur lg:hidden dark:border-ink-800 dark:bg-ink-900/95"
       // Keeps the bar clear of the home indicator on iOS.
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{
+        // Column count follows the tabs actually shown — a support account
+        // sees fewer, and a fixed five-column grid would leave dead space.
+        gridTemplateColumns: `repeat(${primary.length + 1}, minmax(0, 1fr))`,
+        // Keeps the bar clear of the home indicator on iOS.
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
     >
       {primary.map((item) => {
         const active = isActive(pathname, item.href);

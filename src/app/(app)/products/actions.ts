@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireOperator } from "@/lib/require-operator";
+import { requirePermission } from "@/lib/operator-session";
 
 export async function createProduct(formData: FormData) {
-  await requireOperator();
+  await requirePermission("products.manage");
 
   const name = String(formData.get("name") ?? "").trim();
   // Normalised hard, because this string is sent by every install on every
@@ -39,7 +39,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function toggleProductActive(formData: FormData) {
-  await requireOperator();
+  await requirePermission("products.manage");
 
   const id = String(formData.get("id") ?? "");
   const product = await db.product.findUnique({ where: { id }, select: { active: true } });

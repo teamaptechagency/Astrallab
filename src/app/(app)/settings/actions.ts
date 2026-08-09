@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { setSetting, SETTINGS } from "@/lib/settings";
-import { requireOperator } from "@/lib/require-operator";
+import { requirePermission } from "@/lib/operator-session";
 
 const STATUSES = new Set(["coming_soon", "available", "disabled"]);
 
 export async function saveAyojonSettings(formData: FormData) {
-  await requireOperator();
+  await requirePermission("settings.manage");
 
   const status = String(formData.get("status") ?? "");
   if (!STATUSES.has(status)) return;

@@ -3,7 +3,12 @@ import { PageHeader, Table, Td, Badge, EmptyState, StatCard, when } from "@/comp
 
 export const dynamic = "force-dynamic";
 
+import { requirePermission } from "@/lib/operator-session";
+
 export default async function LeadsPage() {
+  // Third-party personal data — the strictest thing this console holds.
+  await requirePermission("leads.view");
+
   const [leads, total, shops] = await Promise.all([
     db.lead.findMany({ orderBy: { capturedAt: "desc" }, take: 100 }),
     db.lead.count(),

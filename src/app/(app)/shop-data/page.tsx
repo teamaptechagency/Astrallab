@@ -3,11 +3,14 @@ import { PageHeader, Table, Td, EmptyState, StatCard, money, when } from "@/comp
 
 export const dynamic = "force-dynamic";
 
+import { requirePermission } from "@/lib/operator-session";
+
 export default async function ShopDataPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
+  await requirePermission("shopdata.view");
   const { q } = await searchParams;
 
   const [products, total, shops] = await Promise.all([

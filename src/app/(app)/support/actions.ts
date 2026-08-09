@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireOperator } from "@/lib/require-operator";
+import { requirePermission } from "@/lib/operator-session";
 
 const STATUSES = new Set(["open", "investigating", "resolved", "closed"]);
 const SEVERITIES = new Set(["low", "normal", "high", "critical"]);
 
 export async function updateReport(formData: FormData) {
-  await requireOperator();
+  await requirePermission("support.manage");
 
   const id = String(formData.get("id") ?? "");
   if (!id) return;

@@ -4,11 +4,15 @@ import { setLicenceStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+import { requirePermission } from "@/lib/operator-session";
+import { can } from "@/lib/roles";
+
 export default async function LicencesPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string; status?: string }>;
 }) {
+  const me = await requirePermission("licences.view");
   const { q, status } = await searchParams;
 
   const licences = await db.licence.findMany({
@@ -95,7 +99,7 @@ export default async function LicencesPage({
                       <button className="btn-ghost !px-2 !py-1 text-xs">Restore</button>
                     </form>
                   )}
-                  {l.status !== "revoked" && (
+                  {l.status !== "revoked" && can(me.role, "licences.revoke") && (
                     <form action={setLicenceStatus}>
                       <input type="hidden" name="id" value={l.id} />
                       <input type="hidden" name="status" value="revoked" />

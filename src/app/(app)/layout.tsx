@@ -1,11 +1,30 @@
+import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import { getOperator } from "@/lib/operator-session";
 import { Sidebar, MobileTabs, MobileHeader } from "@/components/nav";
+import { visibleRoutes } from "@/lib/roles";
 
-// The authenticated shell: sidebar on desktop, app-style bottom tabs on mobile.
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+// The authenticated shell.
+//
+// This is where authorisation actually happens — middleware only checked that
+// a cookie exists. Resolving the operator here means every page under (app)
+// is gated by one check that cannot be forgotten on a new page.
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const operator = await getOperator();
+
+  if (!operator) {
+    // No accounts at all means a fresh install: send them to create the first
+    // owner rather than to a login screen nobody can pass.
+    const count = await db.operator.count();
+    redirect(count === 0 ? "/setup" : "/login");
+  }
+
+  const allowed = visibleRoutes(operator.role);
+
   return (
     <>
       <div className="flex min-h-screen">
-        <Sidebar />
+        <Sidebar operator={operator} allowed={allowed} />
         <div className="flex min-w-0 flex-1 flex-col">
           <MobileHeader />
           {/* Bottom padding clears the fixed mobile tab bar. */}
@@ -14,7 +33,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </main>
         </div>
       </div>
-      <MobileTabs />
+      <MobileTabs allowed={allowed} />
     </>
   );
 }

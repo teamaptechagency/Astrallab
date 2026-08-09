@@ -6,7 +6,7 @@ import { Readable } from "node:stream";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireOperatorApi } from "@/lib/require-operator";
+import { requireApiPermission } from "@/lib/operator-session";
 
 // POST /api/admin/releases/<id>/package — upload a release artefact.
 //
@@ -23,8 +23,8 @@ const PACKAGE_DIR = path.join(process.cwd(), "packages");
 const MAX_BYTES = 200 * 1024 * 1024;
 
 export async function POST(request: Request, ctx: { params: Promise<{ id: string }> }) {
-  const denied = await requireOperatorApi();
-  if (denied) return denied;
+  const auth = await requireApiPermission("releases.manage");
+  if ("denied" in auth) return auth.denied;
 
   const { id } = await ctx.params;
 

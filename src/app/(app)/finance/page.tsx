@@ -6,7 +6,13 @@ export const dynamic = "force-dynamic";
 
 const CATEGORIES = ["hosting", "salary", "marketing", "refund", "tools", "other"];
 
+import { requirePermission } from "@/lib/operator-session";
+
 export default async function FinancePage() {
+  // Hiding the nav link is presentation; this is the access control. A URL
+  // typed directly must be refused just as firmly.
+  await requirePermission("finance.view");
+
   const yearStart = new Date(new Date().getFullYear(), 0, 1);
 
   const [licences, transactions] = await Promise.all([

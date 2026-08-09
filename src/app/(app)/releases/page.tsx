@@ -7,7 +7,11 @@ import { createRelease, togglePublished } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+import { requirePermission } from "@/lib/operator-session";
+
 export default async function ReleasesPage() {
+  await requirePermission("releases.manage");
+
   const [releases, products] = await Promise.all([
     db.release.findMany({ include: { product: true }, orderBy: { createdAt: "desc" } }),
     db.product.findMany({ where: { active: true }, orderBy: { name: "asc" } }),

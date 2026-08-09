@@ -4,11 +4,11 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireOperator } from "@/lib/require-operator";
+import { requirePermission } from "@/lib/operator-session";
 import { parseVersion } from "@/lib/version";
 
 export async function createRelease(formData: FormData) {
-  await requireOperator();
+  await requirePermission("releases.manage");
 
   const productId = String(formData.get("productId") ?? "");
   const version = String(formData.get("version") ?? "").trim();
@@ -40,7 +40,7 @@ export async function createRelease(formData: FormData) {
 }
 
 export async function togglePublished(formData: FormData) {
-  await requireOperator();
+  await requirePermission("releases.manage");
 
   const id = String(formData.get("id") ?? "");
   const release = await db.release.findUnique({

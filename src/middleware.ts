@@ -1,24 +1,28 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { isValidAdminCookie, ADMIN_COOKIE } from "@/lib/admin-auth";
 
-// Gate the operator console.
-//
-// The /api/v1 routes are deliberately NOT covered: they authenticate
-// themselves, each in the way appropriate to its caller — an HMAC from the
-// store, a licence key from an install. Putting an admin cookie check in front
-// of them would lock out every customer site.
-//
-// Everything else is the console, which lists customers, emails and licences,
-// and must never be publicly readable.
+const OPERATOR_COOKIE = "astralab_session";
 
-export async function middleware(request: NextRequest) {
+// A cheap gate, not the authorisation check.
+//
+// Middleware runs on the Edge runtime with no database, so it cannot tell a
+// valid session token from a forged one — it only sees whether a cookie is
+// present. The real check is getOperator() in the (app) layout, which resolves
+// the token against the database and enforces the role on every page. This
+// exists so a signed-out visitor gets the login screen instead of a flash of
+// layout followed by a redirect.
+//
+// /api is excluded deliberately: those routes authenticate their own callers —
+// an HMAC from the store, a licence key from an install — and none of them
+// carry an operator cookie.
+
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/")) return NextResponse.next();
-  if (pathname === "/login") return NextResponse.next();
+  if (pathname === "/login" || pathname === "/setup") return NextResponse.next();
 
-  if (!(await isValidAdminCookie(request.cookies.get(ADMIN_COOKIE)?.value))) {
+  if (!request.cookies.has(OPERATOR_COOKIE)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";

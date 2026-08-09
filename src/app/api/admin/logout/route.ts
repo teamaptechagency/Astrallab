@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE } from "@/lib/admin-auth";
+import { revokeCurrentSession } from "@/lib/operator-session";
 
-// POST /api/admin/logout — clear the operator session.
+// POST /api/admin/logout — end this session.
 //
-// A route rather than a server action so the sign-out control can be a plain
-// form in the sidebar, which renders on every page without making the whole
-// navigation a client component.
+// Revokes the session row as well as clearing the cookie, so the token is dead
+// everywhere rather than merely hidden from this browser.
 export async function POST(request: Request) {
-  const response = NextResponse.redirect(new URL("/login", request.url), { status: 303 });
-  response.cookies.set(ADMIN_COOKIE, "", { path: "/", maxAge: 0 });
-  return response;
+  await revokeCurrentSession();
+  return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
 }

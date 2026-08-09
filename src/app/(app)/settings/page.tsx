@@ -4,7 +4,11 @@ import { saveAyojonSettings } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+import { requirePermission } from "@/lib/operator-session";
+
 export default async function SettingsPage() {
+  await requirePermission("settings.manage");
+
   const [status, connectUrl, message] = await Promise.all([
     getSetting(SETTINGS.AYOJON_STATUS),
     getSetting(SETTINGS.AYOJON_CONNECT_URL),

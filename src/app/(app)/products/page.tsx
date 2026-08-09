@@ -10,7 +10,11 @@ export const dynamic = "force-dynamic";
 // WooCommerce product. No code changes: licensing, activation, updates and
 // downloads are all already scoped by product.
 
+import { requirePermission } from "@/lib/operator-session";
+
 export default async function ProductsPage() {
+  await requirePermission("products.manage");
+
   const products = await db.product.findMany({
     include: {
       _count: { select: { licences: true, releases: true } },

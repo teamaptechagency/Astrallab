@@ -170,6 +170,10 @@ model LicenceEvent {
   domain    String?
   detail    String?
   ip        String?
+  // Who did it, for operator-initiated events. Stored as a name rather than a
+  // foreign key so the record still reads correctly after an account is
+  // renamed or deactivated — an audit trail should say what was true then.
+  actor     String?
   createdAt DateTime @default(now())
 
   @@index([licenceId, createdAt])
@@ -304,6 +308,58 @@ model Transaction {
 // ---------------------------------------------------------------------------
 // Future Ayojon integration — deliberately dormant
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Operators
+// ---------------------------------------------------------------------------
+
+// A person who uses this console.
+//
+// Replaces the single shared password this started with. That was fine for one
+// person and became a liability the moment a second needed access: with one
+// password nobody can be told apart, so every audit entry read "(operator)"
+// and meant nothing.
+model Operator {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  name         String
+  // scrypt, salted per-operator. Never a bare hash — password reuse is
+  // universal, and a leaked unsalted table is a gift to anyone holding it.
+  passwordHash String
+
+  // role: owner | developer | support — see src/lib/roles.ts for what each
+  // may actually do.
+  role String @default("support")
+
+  // Deactivated rather than deleted, so their name survives in the audit log.
+  // A revocation attributed to a deleted account is a revocation attributed
+  // to nobody.
+  active Boolean @default(true)
+
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  sessions OperatorSession[]
+}
+
+// Database-backed so a session can actually be revoked — signing someone out,
+// deactivating them, or a stolen laptop all take effect on the next request.
+// The cookie carries a random token; only its HMAC is stored.
+model OperatorSession {
+  id         String    @id @default(cuid())
+  tokenHash  String    @unique
+  operatorId String
+  operator   Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  userAgent  String?
+  ip         String?
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+
+  @@index([operatorId])
+}
 
 // Runtime switches the hub owns, so behaviour can change without a deploy.
 // The one that matters today is `ayojon.status`: every CMS install asks the

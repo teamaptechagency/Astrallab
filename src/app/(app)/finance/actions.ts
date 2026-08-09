@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireOperator } from "@/lib/require-operator";
+import { requirePermission } from "@/lib/operator-session";
 
 export async function addTransaction(formData: FormData) {
-  await requireOperator();
+  await requirePermission("finance.manage");
 
   const amount = Number(formData.get("amount"));
   const occurredRaw = String(formData.get("occurredAt") ?? "");
@@ -32,7 +32,7 @@ export async function addTransaction(formData: FormData) {
 }
 
 export async function deleteTransaction(formData: FormData) {
-  await requireOperator();
+  await requirePermission("finance.manage");
 
   const id = String(formData.get("id") ?? "");
   if (!id) return;

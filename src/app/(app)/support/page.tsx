@@ -4,11 +4,14 @@ import { updateReport } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+import { requirePermission } from "@/lib/operator-session";
+
 export default async function SupportPage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
+  await requirePermission("support.manage");
   const { status } = await searchParams;
 
   const reports = await db.report.findMany({

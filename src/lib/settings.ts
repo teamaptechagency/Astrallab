@@ -13,6 +13,7 @@ export const SETTINGS = {
   AYOJON_STATUS: "ayojon.status",
   AYOJON_CONNECT_URL: "ayojon.connect_url",
   AYOJON_MESSAGE: "ayojon.message",
+  STORE_SECRET_ROTATED_AT: "store_secret.rotated_at",
 } as const;
 
 /** coming_soon — teased but not usable. available — connect flow is live.
