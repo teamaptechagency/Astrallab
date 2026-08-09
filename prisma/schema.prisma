@@ -1,0 +1,150 @@
+// manage.astralab.com — licence, activation and update hub.
+//
+// SQLite for the prototype (zero setup, runs anywhere). Swapping to Postgres
+// is a provider change here plus a connection string; the schema deliberately
+// avoids anything SQLite-only — status fields are documented Strings rather
+// than enums, matching how the Ayojon schema handles the same problem.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// A thing sold on astralab.com. One row per sellable product (the CMS today,
+// premium themes and modules later).
+model Product {
+  id        String   @id @default(cuid())
+  // Stable machine key the installer sends, e.g. "astralab-cms".
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  releases Release[]
+  licences Licence[]
+}
+
+// A published version of a product. The installer and the updater both read
+// these: the installer takes the newest, the updater walks the path from the
+// install's current version upward.
+model Release {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // Semver, e.g. "1.4.2".
+  version   String
+  // channel: stable | beta
+  channel   String   @default("stable")
+  // severity: normal | security — security releases shorten the client's
+  // check interval and show a persistent warning rather than a banner.
+  severity  String   @default("normal")
+  notes     String   @default("")
+  // Where the package actually lives. Never handed to a client directly —
+  // clients receive a signed, expiring link derived from this.
+  packageUrl String
+  // SHA-256 of the package, so the installer can verify what it downloaded
+  // before extracting it over a live site.
+  checksum   String
+  sizeBytes  Int      @default(0)
+  // Lowest version that can jump straight to this one. Anything older has to
+  // come up through the intermediate releases so migrations run in order.
+  minUpgradeFrom String?
+  // Unpublished releases are invisible to clients — staging area for uploads.
+  published  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([productId, version])
+  @@index([productId, published])
+}
+
+// A purchase. Issued by the WooCommerce store the moment an order is paid.
+//
+// The key itself is never stored — only its HMAC, exactly like a session
+// token. A dump of this table cannot be turned back into working keys. The
+// last four characters are kept separately so support can identify a licence
+// a customer reads out over the phone.
+model Licence {
+  id        String  @id @default(cuid())
+  keyHash   String  @unique
+  keyLast4  String
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  // Where the sale came from. The pair is unique so a webhook delivered twice
+  // — which WooCommerce does routinely — cannot mint a second licence.
+  orderRef   String
+  orderSource String @default("woocommerce")
+
+  customerEmail String
+  customerName  String?
+
+  // status: unactivated | active | deactivated | suspended | revoked
+  //
+  // unactivated — paid, never bound to a domain
+  // active      — bound to one production domain
+  // deactivated — released by the customer, free to bind elsewhere
+  // suspended   — payment dispute or abuse; reversible, admin review
+  // revoked     — refund or fraud; terminal
+  status String @default("unactivated")
+  // Why a human changed the status. Surfaced to the customer for suspended
+  // and revoked so the message isn't just a dead end.
+  statusNote String?
+
+  // How many production domains may be bound at once. One, per the sales
+  // terms; stored rather than hardcoded so a multi-site tier can exist later
+  // without a migration.
+  seatLimit Int @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activations Activation[]
+  events      LicenceEvent[]
+
+  @@unique([orderSource, orderRef])
+  @@index([customerEmail])
+}
+
+// A licence bound to one domain. Released rows are kept rather than deleted
+// so the transfer history stays auditable — repeated hopping between domains
+// is the main abuse signal there is.
+model Activation {
+  id        String  @id @default(cuid())
+  licenceId String
+  licence   Licence @relation(fields: [licenceId], references: [id], onDelete: Cascade)
+
+  // Normalised host only — no scheme, no www, no trailing slash, lowercased.
+  // Normalisation happens before storage so "https://WWW.Shop.com/" and
+  // "shop.com" can never occupy two seats.
+  domain String
+
+  releasedAt DateTime?
+  // Version and environment the install last reported. Populated by the
+  // heartbeat, used by support and by the update path calculation.
+  lastVersion String?
+  phpVersion  String?
+  lastSeenAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([licenceId])
+  @@index([domain])
+}
+
+// Append-only audit of everything that happened to a licence. Support and
+// abuse review both run off this; nothing here is ever updated in place.
+model LicenceEvent {
+  id        String  @id @default(cuid())
+  licenceId String
+  licence   Licence @relation(fields: [licenceId], references: [id], onDelete: Cascade)
+  // kind: issued | activated | deactivated | blocked | heartbeat | status_changed
+  kind      String
+  domain    String?
+  detail    String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([licenceId, createdAt])
+}
