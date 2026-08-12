@@ -5,6 +5,17 @@
 
     RewriteEngine On
 
+    # ---- one canonical address ----
+    # HTTPS and then the bare domain, both permanent, and both before the front
+    # controller: a redirect that costs a PHP boot is a redirect done in the
+    # wrong place.
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -23,3 +34,29 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+
+    # Turn on once every subdomain is definitely on HTTPS. A premature HSTS
+    # header locks visitors out of anything still served over http.
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+    <FilesMatch "\.(css|js|svg|png|jpg|jpeg|webp|woff2|ico)$">
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json image/svg+xml
+</IfModule>
+
+# Belt and braces. The application lives outside this directory, so there is no
+# .env here to fetch — but a future mistake that puts one here should not be
+# downloadable over HTTP.
+<FilesMatch "\.(env|md|log|sql|yml|lock)$">
+    Require all denied
+</FilesMatch>

@@ -17,3 +17,4 @@ astralab-website.zip
 # dependency tree out of the parent repo's index.
 site/vendor/
 site/node_modules/
+site/astralab-site.zip
