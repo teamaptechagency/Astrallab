@@ -4,7 +4,20 @@
 // public catalogue API so version numbers and availability are never stale
 // copy that someone forgot to update after a release.
 
-const HUB = window.ASTRALAB_HUB || "http://localhost:3200";
+// Where the catalogue comes from.
+//
+// Worked out from the address bar rather than pasted into every page: this
+// site has no build step, and a hard-coded production URL is exactly the kind
+// of thing that is still pointing at localhost on the day it goes live.
+// Anything served from a real domain talks to the real hub; anything on a
+// developer's machine talks to theirs.
+//
+// window.ASTRALAB_HUB still wins, for a staging hub or for the WordPress
+// template later on.
+const ON_A_DEV_MACHINE = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+const HUB =
+  window.ASTRALAB_HUB ||
+  (ON_A_DEV_MACHINE ? "http://localhost:3200" : "https://manage.astralab.com");
 
 /* ---- mobile menu ---- */
 const toggle = document.querySelector(".nav-toggle");

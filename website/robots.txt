@@ -1,0 +1,15 @@
+# astralab.com
+#
+# Everything public is meant to be found. The WooCommerce account and checkout
+# pages are not: they are per-customer, they change constantly, and a search
+# result pointing at somebody's cart helps nobody.
+
+User-agent: *
+Allow: /
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /my-account/
+Disallow: /wp-admin/
+Allow: /wp-admin/admin-ajax.php
+
+Sitemap: https://astralab.com/sitemap.xml

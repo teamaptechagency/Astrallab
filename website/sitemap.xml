@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Three pages, listed by their clean URLs — the same addresses the canonical
+  tags declare. Listing docs.html here instead would ask Google to index a URL
+  the server immediately redirects away from.
+
+  WooCommerce will add /shop/ and its own pages through its own sitemap once
+  that side is live; this file covers only what is hand-written.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://astralab.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://astralab.com/docs</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://astralab.com/services</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

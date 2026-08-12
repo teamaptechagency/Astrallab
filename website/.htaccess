@@ -1,0 +1,92 @@
+# astralab.com — server rules for Hostinger (LiteSpeed, which reads .htaccess).
+#
+# Everything here is either correctness (one canonical URL per page) or safety
+# (headers, dotfiles). Nothing here is required for the site to render, so if a
+# host ever ignores this file the site still works — it is just less tidy and
+# less locked down. That is deliberate: a static site that only functions with
+# a working rewrite engine is a static site that breaks when it moves.
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # ---- one canonical address ----
+  # HTTPS first, then the bare domain. Both are 301s because these are
+  # permanent: a search engine that indexed http://www. should be told once and
+  # not asked again on every crawl.
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
+  # ---- clean URLs ----
+  # /docs is the address; /docs.html is the file. The visible URL is the one
+  # without the extension, so the file name can change later without breaking
+  # a link somebody pasted into Facebook.
+  #
+  # THE_REQUEST is matched rather than REQUEST_URI so this only fires on what
+  # the browser actually asked for. Matching the rewritten path instead would
+  # send the internal rewrite below straight back out as a redirect, and the
+  # two would bounce off each other until the browser gave up.
+  RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
+  RewriteRule ^ /%1 [R=301,L]
+
+  # /index -> /
+  RewriteRule ^index$ / [R=301,L]
+
+  # And the other direction, invisibly: /docs serves docs.html.
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}\.html -f
+  RewriteRule ^(.+?)/?$ $1.html [L]
+</IfModule>
+
+ErrorDocument 404 /404.html
+
+# ---- headers ----
+<IfModule mod_headers.c>
+  # Nothing on this site is meant to be framed, and there is no reason for a
+  # browser to guess at a content type we already declare.
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # No camera, no microphone, no geolocation. A marketing site asking for any
+  # of those is a marketing site that has been compromised.
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+
+  # Told to browsers only once the domain is definitely serving HTTPS
+  # everywhere — including any subdomain. Uncomment when that is true; a
+  # premature HSTS header locks visitors out of anything still on http.
+  # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  # HTML is cheap and changes; the assets are versioned by editing them, so
+  # they get a week rather than a year. A year would mean a stylesheet fix
+  # reaching returning visitors some time next summer.
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+
+  <FilesMatch "\.(css|js|svg|png|jpg|jpeg|webp|woff2|ico)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+</IfModule>
+
+# ---- compression ----
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json image/svg+xml
+</IfModule>
+
+# ---- what nobody should be able to fetch ----
+# Source control, editor leftovers, and anything beginning with a dot —
+# including this file.
+<FilesMatch "^\.|\.(md|mjs|json|lock|yml|yaml|bak|log|sql|zip)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_mime.c>
+  AddType image/svg+xml .svg
+  AddType font/woff2 .woff2
+</IfModule>
