@@ -26,6 +26,33 @@ import path from "node:path";
 const ROOT = import.meta.dirname;
 const OUT = path.join(ROOT, "astralab-website.zip");
 
+// The domain this build is for.
+//
+//   node website/build-zip.mjs --domain=astrallabs.uk
+//
+// The pages are written with astralab.com in their canonical tags, their
+// Open Graph URLs, the sitemap and robots.txt — absolute URLs, because that is
+// what those four things require. Uploading them unchanged to a different
+// domain tells Google the real copy of every page is somewhere else, and the
+// site that is actually live stays out of the results.
+//
+// So the domain is stamped in here, once, at build time, rather than being
+// three files somebody has to remember to edit.
+const SOURCE_DOMAIN = "astralab.com";
+const DOMAIN =
+  process.argv.find((a) => a.startsWith("--domain="))?.slice("--domain=".length) || SOURCE_DOMAIN;
+
+// Only the files that carry absolute URLs. Rewriting binaries would corrupt
+// them, and the stylesheet has no URLs in it to rewrite.
+//
+// site.js is in here because it names the hub — manage.astralab.com — and a
+// site on one domain fetching its catalogue from a domain nobody owns is the
+// same mistake as a canonical tag pointing at the wrong host, just quieter.
+// The subdomain survives the swap: manage.astralab.com becomes
+// manage.<your domain>. The build prints what it produced, so it is checkable
+// rather than assumed.
+const REWRITE = /\.(html|xml|txt|js)$/i;
+
 // A deny-list on purpose: a new page or image should reach the upload without
 // anyone remembering to add it here, whereas a new dev tool is worth a thought.
 const DEV_ONLY = new Set([
@@ -69,8 +96,18 @@ async function main() {
   const central = [];
   let offset = 0;
 
+  let rewritten = 0;
+
   for (const name of names) {
-    const body = await readFile(path.join(ROOT, name));
+    let body = await readFile(path.join(ROOT, name));
+
+    if (DOMAIN !== SOURCE_DOMAIN && REWRITE.test(name)) {
+      const before = body.toString("utf8");
+      const after = before.split(SOURCE_DOMAIN).join(DOMAIN);
+      if (after !== before) rewritten++;
+      body = Buffer.from(after, "utf8");
+    }
+
     const { mtime } = await stat(path.join(ROOT, name));
     const { time, day } = dosStamp(mtime);
 
@@ -151,8 +188,28 @@ async function main() {
   const wrong = inside.filter((n) => n.includes("\\"));
   if (wrong.length) throw new Error(`Backslashes in: ${wrong.join(", ")}`);
 
+  // The domain is the one thing here that is wrong silently: a canonical tag
+  // pointing at the wrong host looks fine in a browser and quietly keeps the
+  // site out of search. So the archive is read back for the old domain too.
+  if (DOMAIN !== SOURCE_DOMAIN) {
+    const { stdout: leftover } = await promisify(execFile)("powershell", [
+      "-NoProfile",
+      "-Command",
+      `Add-Type -A System.IO.Compression.FileSystem; ` +
+        `$z=[IO.Compression.ZipFile]::OpenRead('${OUT}'); ` +
+        `$z.Entries | Where-Object { $_.Name -match '\\.(html|xml|txt)$' } | ForEach-Object { ` +
+        `$r=New-Object IO.StreamReader($_.Open()); ` +
+        `if ($r.ReadToEnd() -match '${SOURCE_DOMAIN.replace(".", "\\.")}') { $_.FullName } }`,
+    ]);
+
+    const stale = leftover.trim().split(/\r?\n/).filter(Boolean);
+    if (stale.length) throw new Error(`Still says ${SOURCE_DOMAIN}: ${stale.join(", ")}`);
+  }
+
   const size = (await stat(OUT)).size;
-  console.log(`astralab-website.zip — ${inside.length} files, ${(size / 1024).toFixed(0)} KB\n`);
+  console.log(`astralab-website.zip — ${inside.length} files, ${(size / 1024).toFixed(0)} KB`);
+  console.log(`Built for ${DOMAIN}${rewritten ? ` (${rewritten} files rewritten)` : ""}`);
+  console.log(`Catalogue will be fetched from https://manage.${DOMAIN}\n`);
   for (const name of inside.sort()) console.log(`  ${name}`);
   console.log(`\nUpload to public_html and Extract. Left out: ${[...DEV_ONLY].join(", ")}`);
 }
