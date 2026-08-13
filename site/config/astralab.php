@@ -87,4 +87,20 @@ return [
     */
     "signing_key" => env("SIGNING_PRIVATE_KEY", ""),
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | The back-office hostname
+    |--------------------------------------------------------------------------
+    |
+    | manage.astrallabs.uk. Blank while its DNS is being arranged, because
+    | restricting the console to a hostname that does not resolve yet would lock
+    | everybody out of it.
+    |
+    | Once set, the console answers there and nowhere else — the public domain
+    | is left serving only public things. One application, two addresses: one
+    | for buyers, one for the back office and for the shops calling home.
+    */
+    "manage_host" => env("ASTRALAB_MANAGE_HOST", ""),
+
 ];

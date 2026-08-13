@@ -77,16 +77,27 @@ Route::get('/refund', [LegalController::class, 'refund'])->name('refund');
 Route::view('/shop', 'pages.shop')->name('shop');
 
 /*
-| The console.
+|--------------------------------------------------------------------------
+| The console
+|--------------------------------------------------------------------------
 |
 | One address in three states — set up, sign in, or use it — because on shared
 | hosting there is no shell to run migrations in and no second way in. The
 | setup screen is unauthenticated and runs migrations, which is safe only
 | because it refuses the moment a first account exists.
 |
+| Which hostname it answers on is a setting, not a code change. Left blank, the
+| console is reachable wherever the app is — which is what you want before the
+| subdomain's DNS exists, because restricting it first would lock everybody out
+| of a console on a hostname that does not resolve yet.
+|
+| Set ASTRALAB_MANAGE_HOST once manage.astrallabs.uk points here, and the public
+| domain stops serving the console entirely. The same app, one address for
+| buyers and one for the back office.
+|
 | Rate limited: this is the one form on the site worth guessing at.
 */
-Route::prefix('apt-admin')->group(function () {
+Route::domain(config('astralab.manage_host') ?: null)->prefix('apt-admin')->group(function () {
     Route::get('/', [AdminController::class, 'entry'])->name('admin');
 
     Route::post('/setup', [AdminController::class, 'install'])->middleware('throttle:10,1');

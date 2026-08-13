@@ -1,4 +1,4 @@
-// astralab.com — the only script on the site.
+// astrallabs.uk — the only script on the site.
 //
 // Two jobs: the mobile menu, and filling the product grid from the hub's
 // public catalogue API so version numbers and availability are never stale
@@ -17,7 +17,7 @@
 const ON_A_DEV_MACHINE = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
 const HUB =
   window.ASTRALAB_HUB ||
-  (ON_A_DEV_MACHINE ? "http://localhost:3200" : "https://manage.astralab.com");
+  (ON_A_DEV_MACHINE ? "http://localhost:3200" : "https://manage.astrallabs.uk");
 
 /* ---- mobile menu ---- */
 const toggle = document.querySelector(".nav-toggle");
