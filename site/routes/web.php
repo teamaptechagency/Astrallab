@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LegalController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,4 +51,25 @@ Route::get('/refund', [LegalController::class, 'refund'])->name('refund');
 */
 Route::view('/shop', 'pages.shop')->name('shop');
 
-Route::get('/apt-admin', fn () => 'Operator console — not built yet.')->name('admin');
+/*
+| The console.
+|
+| One address in three states — set up, sign in, or use it — because on shared
+| hosting there is no shell to run migrations in and no second way in. The
+| setup screen is unauthenticated and runs migrations, which is safe only
+| because it refuses the moment a first account exists.
+|
+| Rate limited: this is the one form on the site worth guessing at.
+*/
+Route::prefix('apt-admin')->group(function () {
+    Route::get('/', [AdminController::class, 'entry'])->name('admin');
+
+    Route::post('/setup', [AdminController::class, 'install'])->middleware('throttle:10,1');
+    Route::post('/login', [AdminController::class, 'login'])->middleware('throttle:10,1');
+    Route::post('/logout', [AdminController::class, 'logout']);
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/settings', [AdminController::class, 'settings']);
+        Route::post('/settings', [AdminController::class, 'saveSettings']);
+    });
+});

@@ -12,7 +12,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Laravel sends signed-out visitors to a route named "login". There
+        // isn't one — the console's three states all live behind /apt-admin —
+        // so without this, opening a console page while signed out is a 500
+        // rather than the sign-in form.
+        $middleware->redirectGuestsTo(fn () => '/apt-admin');
+
+        // And somebody already signed in who opens /apt-admin gets the console
+        // rather than a form they do not need.
+        $middleware->redirectUsersTo(fn () => '/apt-admin');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
