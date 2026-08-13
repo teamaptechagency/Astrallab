@@ -52,4 +52,19 @@ return [
     */
     'refund_days' => (int) env('ASTRALAB_REFUND_DAYS', 7),
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Installed marker
+    |--------------------------------------------------------------------------
+    |
+    | Written by the installer when the site is finished, and read on every
+    | request to decide whether to send a visitor to the wizard. A file rather
+    | than a setting, because before the database exists there is nothing to
+    | ask — and this check has to answer without a connection.
+    |
+    | Overridable so the test suite can point it somewhere disposable.
+    */
+    "install_lock" => env("ASTRALAB_INSTALL_LOCK", storage_path("app/installed.json")),
+
 ];

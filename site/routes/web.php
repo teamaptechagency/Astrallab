@@ -1,8 +1,33 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\InstallController;
 use App\Http\Controllers\LegalController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| First run
+|--------------------------------------------------------------------------
+|
+| Unauthenticated, because this is what creates the first account and writes
+| the database credentials. What makes that safe is that the whole group stops
+| existing the moment the site is installed, and until then every request
+| outside it is redirected here.
+|
+| Rate limited all the same: step two opens a connection to whatever host it is
+| given, and that should not be usable as a port scanner.
+*/
+
+Route::middleware(['not-installed', 'throttle:20,1'])->group(function () {
+    Route::get('/install', [InstallController::class, 'welcome']);
+
+    Route::get('/install/database', [InstallController::class, 'database']);
+    Route::post('/install/database', [InstallController::class, 'saveDatabase']);
+
+    Route::get('/install/account', [InstallController::class, 'account']);
+    Route::post('/install/account', [InstallController::class, 'saveAccount']);
+});
 
 /*
 |--------------------------------------------------------------------------

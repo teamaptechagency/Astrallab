@@ -56,6 +56,11 @@ class Package extends Command
         'storage/framework/cache/data',
         'storage/framework/sessions',
         'storage/framework/views',
+        // The marker that says "this site is already set up". Shipping it would
+        // mean every fresh upload skips the installer and comes up pointed at
+        // the database on the machine that built the archive — which is to say,
+        // no database at all.
+        'storage/app/installed.json',
         'database/database.sqlite',
         'phpunit.xml',
         'README.md',
