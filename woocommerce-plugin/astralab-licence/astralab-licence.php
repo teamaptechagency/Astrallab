@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Astra Lab Licence
- * Description: Issues a licence key from manage.astralab when a WooCommerce order is paid, and shows it to the customer.
+ * Description: Issues a licence key from manage.astrallabs.uk when a WooCommerce order is paid, and shows it to the customer.
  * Version:     0.1.0
  * Author:      Astra Lab
  * Text Domain: astralab-licence

@@ -1,6 +1,6 @@
 <?php
 /**
- * HTTP client for manage.astralab.
+ * HTTP client for manage.astrallabs.uk.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

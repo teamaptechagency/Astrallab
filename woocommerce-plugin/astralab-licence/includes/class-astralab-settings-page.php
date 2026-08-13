@@ -31,7 +31,7 @@ class Astralab_Settings_Page extends WC_Settings_Page {
 				'title'    => __( 'Hub URL', 'astralab-licence' ),
 				'id'       => Astralab_Settings::OPT_HUB,
 				'type'     => 'url',
-				'placeholder' => 'https://manage.astralab.com',
+				'placeholder' => 'https://manage.astrallabs.uk',
 				'desc'     => __( 'No trailing slash. Must be HTTPS in production — the licence key comes back in this response.', 'astralab-licence' ),
 				'desc_tip' => true,
 			),

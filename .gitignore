@@ -18,3 +18,6 @@ astralab-website.zip
 site/vendor/
 site/node_modules/
 site/astralab-site.zip
+
+# Built plugin archives — rebuilt from source.
+woocommerce-plugin/astralab-licence-*.zip

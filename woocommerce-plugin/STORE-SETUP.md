@@ -1,8 +1,8 @@
-# astralab.com — store setup
+# astrallabs.uk — store setup
 
 The store is mostly configuration. The only code is the `astralab-licence`
 plugin in this folder, which turns a paid order into a licence key from
-`manage.astralab`.
+`manage.astrallabs.uk`.
 
 Work through this in order. Steps 1–4 are done in a browser, not in code.
 
@@ -59,16 +59,21 @@ likely misconfiguration.
 ## 5. The licence plugin
 
 ```bash
-cd woocommerce-plugin
-zip -r astralab-licence.zip astralab-licence
+node woocommerce-plugin/build-plugin.mjs
 ```
+
+The script rather than a plain zip: WordPress wants exactly one folder at the
+archive root, and the version in the filename comes from the plugin header so
+the two cannot drift. It also refuses to produce an archive with backslashes in
+it, which is what Windows zip tools write and what a Linux server unpacks as a
+single file with a very long name.
 
 Upload via **Plugins → Add New → Upload Plugin**, activate, then go to
 **WooCommerce → Settings → Astra Lab**:
 
 | Setting | Value |
 | --- | --- |
-| Hub URL | `https://manage.astralab.com` (no trailing slash) |
+| Hub URL | `https://manage.astrallabs.uk` (no trailing slash) |
 | API secret | the `STORE_API_SECRET` from the hub's `.env` |
 | Installation guide URL | wherever your docs live |
 
