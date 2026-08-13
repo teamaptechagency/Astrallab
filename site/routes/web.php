@@ -100,6 +100,11 @@ Route::prefix('apt-admin')->group(function () {
     Route::post('/recover', [AdminController::class, 'resetPassword'])->middleware('throttle:10,1');
 
     Route::middleware('auth')->group(function () {
+        // Running the migrations that came with the last upload. Behind the
+        // sign-in, unlike the installer: by this point there is somebody to
+        // sign in as, so there is no reason for it to be open.
+        Route::post('/updates', [AdminController::class, 'applyUpdates']);
+
         Route::get('/settings', [AdminController::class, 'settings']);
         Route::post('/settings', [AdminController::class, 'saveSettings']);
     });

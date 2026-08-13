@@ -181,3 +181,21 @@ modified time that counts.
 Anyone who can create that file already has your database credentials and could
 change the password row directly. This only saves them working out a bcrypt
 hash, so it adds no access that hosting control did not already give.
+
+## Uploading a new build
+
+The installer runs once and then closes, so a later upload's migrations have no
+way to run by themselves — and there is no shell here to run them from. The
+console asks instead.
+
+1. Build: `php artisan astralab:package`
+2. Upload to the account home folder and **Extract**, overwriting.
+3. Sign in at `/apt-admin`.
+
+If the build brought database changes, the first screen says so and names them,
+with a button to apply. Press it. Nothing else in the console is trustworthy
+until you have — the code expects tables the database does not have yet, and
+the first page that touches one is a 500 with nothing to read.
+
+`.env` is not in the archive, so your settings survive. `storage/` is only
+created where missing, so logs, sessions and the installed marker survive too.

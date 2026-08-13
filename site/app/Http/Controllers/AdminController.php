@@ -6,6 +6,7 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Support\Recovery;
 use App\Support\Settings;
+use App\Support\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -44,6 +45,9 @@ class AdminController extends Controller
             'operator' => Auth::user(),
             'configured' => collect(Settings::current())->filter(fn ($v) => $v !== '' && $v !== null)->count(),
             'total' => count(Settings::fields()),
+            // On the first screen after signing in, because an upload whose
+            // migrations have not run is invisible until something breaks.
+            'pending' => Updates::pending(),
         ]);
     }
 
@@ -201,6 +205,24 @@ class AdminController extends Controller
                 ? 'Password set. The recovery file has been deleted.'
                 : 'Password set — but the recovery file could not be deleted. Remove '
                     .'storage/app/recover yourself, or anyone reaching it can reset this again.'
+        );
+    }
+
+    /**
+     * Apply the migrations that arrived with the last upload.
+     *
+     * Behind a sign-in, unlike the installer: by this point there is somebody
+     * to sign in as, so there is no reason for it to be open.
+     */
+    public function applyUpdates()
+    {
+        $result = Updates::apply();
+
+        return back()->with(
+            $result["ok"] ? "ok" : "problem",
+            $result["ok"]
+                ? "Database updated."
+                : "The update failed: ".$result["message"]
         );
     }
 
