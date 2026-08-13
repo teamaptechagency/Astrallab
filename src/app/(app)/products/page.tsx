@@ -53,7 +53,7 @@ export default async function ProductsPage() {
             <span className="mb-1 block text-ink-500">Public summary</span>
             <input
               name="summary"
-              placeholder="One line shown on astralab.com"
+              placeholder="One line shown on astrallabs.uk"
               className="field"
             />
             <span className="mt-1 block text-xs text-ink-400">

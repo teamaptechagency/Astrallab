@@ -138,7 +138,7 @@ export function Sidebar({
         </span>
         <span className="text-sm font-semibold leading-tight">
           manage
-          <span className="block text-[11px] font-normal text-ink-400">astralab.com</span>
+          <span className="block text-[11px] font-normal text-ink-400">astrallabs.uk</span>
         </span>
       </div>
 

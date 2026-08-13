@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { compareVersions } from "@/lib/version";
 
-// GET /api/public/products — the catalogue astralab.com renders from.
+// GET /api/public/products — the catalogue astrallabs.uk renders from.
 //
 // Public and unauthenticated by design: this is shop-window data. What it must
 // never expose is the business behind it — no licence counts, no revenue, no
@@ -15,8 +15,8 @@ import { compareVersions } from "@/lib/version";
 
 export const dynamic = "force-dynamic";
 
-// Any origin may read it — it is public data, and astralab.com is a different
-// origin from manage.astralab.com, so without this the browser blocks the
+// Any origin may read it — it is public data, and astrallabs.uk is a different
+// origin from manage.astrallabs.uk, so without this the browser blocks the
 // storefront's own fetch.
 const CORS = {
   "Access-Control-Allow-Origin": "*",

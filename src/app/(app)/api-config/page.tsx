@@ -52,7 +52,7 @@ export default async function ApiConfigPage() {
     },
   ];
 
-  const base = process.env.NEXT_PUBLIC_HUB_URL ?? "https://manage.astralab.com";
+  const base = process.env.NEXT_PUBLIC_HUB_URL ?? "https://manage.astrallabs.uk";
 
   return (
     <>
@@ -65,7 +65,7 @@ export default async function ApiConfigPage() {
         </p>
         <div className="mt-3 space-y-2">
           <CopyBox label="Hub URL (WooCommerce plugin setting)" value={base} />
-          <CopyBox label="Public catalogue (astralab.com reads this)" value={`${base}/api/public/products`} />
+          <CopyBox label="Public catalogue (astrallabs.uk reads this)" value={`${base}/api/public/products`} />
         </div>
 
         <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
