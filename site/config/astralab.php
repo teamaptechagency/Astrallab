@@ -67,4 +67,24 @@ return [
     */
     "install_lock" => env("ASTRALAB_INSTALL_LOCK", storage_path("app/installed.json")),
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Response signing key
+    |--------------------------------------------------------------------------
+    |
+    | The Ed25519 PRIVATE key this hub signs replies with. Every copy of the CMS
+    | carries the matching PUBLIC key and refuses anything it cannot verify
+    | against it, which is what stops a hostile DNS answer telling an install it
+    | is licensed.
+    |
+    | This never leaves the server. Shipping it would let any customer forge
+    | "your licence is valid" for everybody.
+    |
+    | Stored as one line with literal 
+, which is the only way a multi-line PEM
+    | survives a .env file.
+    */
+    "signing_key" => env("SIGNING_PRIVATE_KEY", ""),
+
 ];
