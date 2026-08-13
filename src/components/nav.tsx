@@ -20,25 +20,44 @@ export interface NavItem {
   label: string;
   icon: string;
   primary?: boolean;
+  // Which section of the desktop sidebar this sits under. Undefined items sit
+  // above every group — currently just Dashboard, the one destination that
+  // isn't "about" anything else on this list.
+  group?: string;
 }
 
 // "Products" means what Astra Lab sells. Data synced up from customer shops
 // lives under "Shop data" — the two were both called products at first, which
 // made every conversation about them ambiguous.
+//
+// Twelve destinations is too many for one flat list — the sidebar used to be
+// exactly that, and finding Finance meant reading past Team and Leads first.
+// Grouped here by what an operator is actually trying to do (licensing a
+// customer, growing revenue, running the console) rather than by database
+// table, so the section a link sits under is itself an answer to "where
+// would this be".
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", icon: "home", primary: true },
-  { href: "/licences", label: "Licences", icon: "key", primary: true },
-  { href: "/releases", label: "Releases", icon: "package", primary: true },
-  { href: "/support", label: "Support", icon: "life-buoy", primary: true },
-  { href: "/products", label: "Products", icon: "grid" },
-  { href: "/shop-data", label: "Shop data", icon: "store" },
-  { href: "/leads", label: "Leads", icon: "users" },
-  { href: "/sales", label: "Sales", icon: "chart" },
-  { href: "/finance", label: "Finance", icon: "wallet" },
-  { href: "/team", label: "Team", icon: "users" },
-  { href: "/api-config", label: "API config", icon: "plug" },
-  { href: "/settings", label: "Settings", icon: "settings" },
+
+  { href: "/licences", label: "Licences", icon: "key", primary: true, group: "Product" },
+  { href: "/releases", label: "Releases", icon: "package", primary: true, group: "Product" },
+  { href: "/products", label: "Products", icon: "grid", group: "Product" },
+
+  { href: "/leads", label: "Leads", icon: "users", group: "Revenue" },
+  { href: "/sales", label: "Sales", icon: "chart", group: "Revenue" },
+  { href: "/finance", label: "Finance", icon: "wallet", group: "Revenue" },
+
+  { href: "/shop-data", label: "Shop data", icon: "store", group: "Operations" },
+  { href: "/support", label: "Support", icon: "life-buoy", primary: true, group: "Operations" },
+
+  { href: "/team", label: "Team", icon: "users", group: "Admin" },
+  { href: "/api-config", label: "API config", icon: "plug", group: "Admin" },
+  { href: "/settings", label: "Settings", icon: "settings", group: "Admin" },
 ];
+
+// Fixed order rather than however Object.groupBy happens to encounter them,
+// so the sidebar's section order doesn't shuffle if NAV_ITEMS is reordered.
+const GROUP_ORDER = ["Product", "Revenue", "Operations", "Admin"];
 
 function isActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
@@ -86,6 +105,30 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const items = NAV_ITEMS.filter((i) => allowed.includes(i.href));
+  const top = items.filter((i) => !i.group);
+  const groups = GROUP_ORDER.map((name) => ({
+    name,
+    items: items.filter((i) => i.group === name),
+  })).filter((g) => g.items.length > 0);
+
+  const link = (item: NavItem) => {
+    const active = isActive(pathname, item.href);
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        aria-current={active ? "page" : undefined}
+        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
+          active
+            ? "bg-brand-50 font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
+            : "text-ink-600 hover:bg-ink-50 dark:text-ink-300 dark:hover:bg-ink-800"
+        }`}
+      >
+        <Icon name={item.icon} className="h-[18px] w-[18px]" />
+        {item.label}
+      </Link>
+    );
+  };
 
   return (
     <aside className="hidden w-60 shrink-0 border-r border-ink-200 bg-white lg:flex lg:flex-col dark:border-ink-800 dark:bg-ink-900">
@@ -99,25 +142,17 @@ export function Sidebar({
         </span>
       </div>
 
-      <nav className="flex-1 space-y-0.5 px-3 py-2">
-        {items.map((item) => {
-          const active = isActive(pathname, item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={active ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
-                active
-                  ? "bg-brand-50 font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
-                  : "text-ink-600 hover:bg-ink-50 dark:text-ink-300 dark:hover:bg-ink-800"
-              }`}
-            >
-              <Icon name={item.icon} className="h-[18px] w-[18px]" />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-2">
+        {top.length > 0 && <div className="space-y-0.5">{top.map(link)}</div>}
+
+        {groups.map((g) => (
+          <div key={g.name}>
+            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-ink-400">
+              {g.name}
+            </p>
+            <div className="space-y-0.5">{g.items.map(link)}</div>
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-ink-200 p-3 dark:border-ink-800">

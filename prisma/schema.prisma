@@ -337,6 +337,15 @@ model Operator {
   active Boolean @default(true)
 
   lastLoginAt DateTime?
+
+  // Set when a password was issued by somebody else — a reset run from the
+  // server, or a new account. That password opens exactly one door: the screen
+  // that replaces it. Until it is replaced, every other page is refused.
+  //
+  // The point is that a temporary password handed over by WhatsApp or read out
+  // on a call stops working the moment it has been used, rather than living in
+  // that chat forever.
+  mustChangePassword Boolean @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

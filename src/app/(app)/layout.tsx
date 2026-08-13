@@ -19,6 +19,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect(count === 0 ? "/setup" : "/login");
   }
 
+  // A password somebody else set opens exactly one door: the screen that
+  // replaces it.
+  //
+  // This is needed here as well as in requireOperator. Pages under (app)
+  // resolve the operator through this layout rather than calling
+  // requireOperator themselves, so a check living only in that function never
+  // runs for them — which is exactly how a temporary password reached the
+  // dashboard the first time this was tested.
+  if (operator.mustChangePassword) redirect("/change-password");
+
   const allowed = visibleRoutes(operator.role);
 
   return (

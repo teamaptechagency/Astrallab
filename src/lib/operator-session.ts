@@ -62,6 +62,8 @@ export interface CurrentOperator {
   name: string;
   email: string;
   role: string;
+  /** True while signed in with a password somebody else set. */
+  mustChangePassword: boolean;
 }
 
 /**
@@ -92,13 +94,20 @@ export const getOperator = cache(async (): Promise<CurrentOperator | null> => {
       .catch(() => {});
   }
 
-  const { id, name, email, role } = session.operator;
-  return { id, name, email, role };
+  const { id, name, email, role, mustChangePassword } = session.operator;
+  return { id, name, email, role, mustChangePassword };
 });
 
 export async function requireOperator(): Promise<CurrentOperator> {
   const operator = await getOperator();
   if (!operator) redirect("/login");
+
+  // A temporary password opens exactly one door: the screen that replaces it.
+  // Enforced here rather than in the layout, because a check in the layout
+  // guards what is rendered and not what a server action will do — and the
+  // actions are the part that matter.
+  if (operator.mustChangePassword) redirect("/change-password");
+
   return operator;
 }
 

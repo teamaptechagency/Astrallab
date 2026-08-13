@@ -76,12 +76,40 @@ async function main() {
     process.exit(1);
   }
 
+  // Temporary by default. A password set by somebody else — read out on a call,
+  // sent over WhatsApp — should stop working the moment it has been used once,
+  // rather than living in that chat for as long as the account does. Whoever
+  // signs in with it goes straight to /change-password and can reach nothing
+  // else until they have replaced it.
+  //
+  // --permanent is for when the person running this is the person who will use
+  // it, and there is nobody to hand it to.
+  const permanent = process.argv.includes("--permanent");
+
   await db.operator.update({
     where: { email },
-    data: { passwordHash, active: true },
+    data: { passwordHash, active: true, mustChangePassword: !permanent },
+  });
+
+  // Every existing session ends. If the old password was known to somebody it
+  // should not have been, changing it while leaving their session open changes
+  // nothing at all — the session is the access, not the password.
+  const { count } = await db.operatorSession.updateMany({
+    where: { operatorId: operator.id, revokedAt: null },
+    data: { revokedAt: new Date() },
   });
 
   console.log(`Password set for ${email}. The account is active.`);
+
+  if (count > 0) {
+    console.log(`Signed out ${count} existing ${count === 1 ? "session" : "sessions"}.`);
+  }
+
+  console.log(
+    permanent
+      ? "Permanent — they will not be asked to change it."
+      : "Temporary — they must choose their own on first sign-in.",
+  );
   console.log("Sign in at http://localhost:3200/login");
 }
 
