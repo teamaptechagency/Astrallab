@@ -166,7 +166,7 @@ Licence key: ASTRA-7K2M9-QX4RT-8NBVC-3WHDZ
             <li><span class="tick" aria-hidden="true">✓</span> Transfer your licence to a new domain yourself</li>
           </ul>
 
-          <a class="btn btn--primary btn--lg" href="/shop/" style="margin-top:26px;width:100%">Buy now</a>
+          <a class="btn btn--primary btn--lg" href="{{ route('shop') }}" style="margin-top:26px;width:100%">Buy now</a>
           <p style="color:var(--ink-3);font-size:.8125rem;margin-top:12px">
             Payment handled securely by our store. You receive your key straight away.
           </p>
@@ -239,7 +239,7 @@ Licence key: ASTRA-7K2M9-QX4RT-8NBVC-3WHDZ
         </p>
         <div class="hero-actions" style="justify-content:center">
           <a class="btn btn--ghost btn--lg" href="{{ route('docs') }}">Read the install guide</a>
-          <a class="btn btn--lg" href="/shop/" style="background:#fff;color:var(--brand-dark)">Buy now</a>
+          <a class="btn btn--lg" href="{{ route('shop') }}" style="background:#fff;color:var(--brand-dark)">Buy now</a>
         </div>
       </div>
     </div>

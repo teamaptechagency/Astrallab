@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LegalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,5 +27,27 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'pages.home')->name('home');
 Route::view('/docs', 'pages.docs')->name('docs');
 Route::view('/services', 'pages.services')->name('services');
+Route::view('/contact', 'pages.contact')->name('contact');
+
+Route::get('/terms', [LegalController::class, 'terms'])->name('terms');
+Route::get('/privacy', [LegalController::class, 'privacy'])->name('privacy');
+Route::get('/refund', [LegalController::class, 'refund'])->name('refund');
+
+/*
+| Buying.
+|
+| WooCommerce was going to own this on a separate WordPress install, which is
+| no longer the plan now that there is one application. Until checkout exists,
+| every Buy now button lands on a page that says so and offers the way people
+| actually buy things here anyway — by sending a message.
+|
+| A dead link is worse than an honest one: the visitor who clicks Buy now is
+| the visitor who had already decided.
+|
+| One route, not two. Laravel treats /shop and /shop/ as the same path, so
+| registering a redirect from the trailing-slash form makes it redirect /shop
+| to itself until the browser gives up.
+*/
+Route::view('/shop', 'pages.shop')->name('shop');
 
 Route::get('/apt-admin', fn () => 'Operator console — not built yet.')->name('admin');

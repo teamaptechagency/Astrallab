@@ -70,11 +70,58 @@
 
 @yield('content')
 
+{{-- The full footer on every page, not only the home page. It was written once
+     and pasted three times, so docs and services quietly shipped without the
+     legal links — the two pages a cautious buyer is most likely to be on when
+     they go looking for them. --}}
 <footer class="site-footer">
   <div class="wrap">
-    <div class="footer-bottom" style="margin-top:0;border-top:none;padding-top:0">
-      <span>&copy; {{ date('Y') }} Astra Lab — a partner of AP Tech Agency. All rights reserved.</span>
-      <span><a href="{{ route('home') }}" style="text-decoration:none">Back to {{ parse_url(config('app.url'), PHP_URL_HOST) }}</a></span>
+    <div class="footer-grid">
+      <div>
+        <a class="logo" href="{{ route('home') }}" style="margin-bottom:12px">
+          <span class="logo-mark" aria-hidden="true">A</span>
+          <span>Astra Lab</span>
+        </a>
+        <p>Software you install and own, built in Bangladesh.</p>
+        <p style="margin-top:10px">
+          In partnership with
+          <a href="https://aptechagency.com" style="color:var(--brand);text-decoration:none;font-weight:600">{{ config('astralab.company.partner') }}</a>.
+        </p>
+      </div>
+
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="{{ route('home') }}#products">Products</a></li>
+          <li><a href="{{ route('home') }}#pricing">Pricing</a></li>
+          <li><a href="{{ route('home') }}#how">How it works</a></li>
+          <li><a href="{{ route('shop') }}">Buy</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Help</h4>
+        <ul>
+          <li><a href="{{ route('docs') }}">Documentation</a></li>
+          <li><a href="{{ route('docs') }}#requirements">Server requirements</a></li>
+          <li><a href="{{ route('services') }}">Support &amp; care plans</a></li>
+          <li><a href="{{ route('contact') }}">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="{{ route('terms') }}">Terms</a></li>
+          <li><a href="{{ route('privacy') }}">Privacy</a></li>
+          <li><a href="{{ route('refund') }}">Refund policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; {{ date('Y') }} {{ config('astralab.company.name') }} — a partner of {{ config('astralab.company.partner') }}. All rights reserved.</span>
+      <span>{{ config('astralab.contact.address') ?: 'Dhaka, Bangladesh' }}</span>
     </div>
   </div>
 </footer>

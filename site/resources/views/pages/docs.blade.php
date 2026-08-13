@@ -132,7 +132,7 @@
     <h3>Still stuck?</h3>
     <p style="margin-top:6px">Send us your hosting details and the step you reached, and we will
       walk you through it in Bangla or English.</p>
-    <a class="btn btn--primary" href="/contact/" style="margin-top:16px">Contact support</a>
+    <a class="btn btn--primary" href="{{ route('contact') }}" style="margin-top:16px">Contact support</a>
   </div>
 
 </main>

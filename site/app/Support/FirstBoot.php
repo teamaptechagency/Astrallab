@@ -117,6 +117,22 @@ class FirstBoot
         DB_USERNAME=
         DB_PASSWORD=
 
+        # How people reach you. Anything left blank is left off the contact
+        # page rather than shown empty — a page listing a blank phone number is
+        # worse than one listing two ways to reach somebody.
+        # WhatsApp is digits only, country code first, no plus: 8801XXXXXXXXX
+        ASTRALAB_EMAIL=
+        ASTRALAB_PHONE=
+        ASTRALAB_WHATSAPP=
+        ASTRALAB_ADDRESS=
+        ASTRALAB_HOURS="Saturday to Thursday, 10am – 7pm"
+
+        # Named on the terms, privacy and refund pages.
+        ASTRALAB_COMPANY="Astra Lab"
+        ASTRALAB_PARTNER="AP Tech Agency"
+        ASTRALAB_TRADE_LICENCE=
+        ASTRALAB_REFUND_DAYS=7
+
         ENV);
     }
 

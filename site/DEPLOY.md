@@ -74,7 +74,23 @@ DB_PORT=3306
 DB_DATABASE=
 DB_USERNAME=
 DB_PASSWORD=
+
+# How people reach you. Anything blank is left off the contact page rather
+# than shown empty. WhatsApp is digits only, country code first, no plus.
+ASTRALAB_EMAIL=
+ASTRALAB_PHONE=
+ASTRALAB_WHATSAPP=
+ASTRALAB_ADDRESS=
+
+# Named on the terms, privacy and refund pages.
+ASTRALAB_COMPANY="Astra Lab"
+ASTRALAB_TRADE_LICENCE=
+ASTRALAB_REFUND_DAYS=7
 ```
+
+**Fill in at least one of `ASTRALAB_EMAIL` or `ASTRALAB_WHATSAPP`.** With all
+three blank, the contact page has nothing on it but a note about the admin
+panel — which is worse than no contact page at all.
 
 `APP_KEY` must be filled in or every page returns a 500. Generate one on your
 own machine and paste the whole `base64:...` string in:

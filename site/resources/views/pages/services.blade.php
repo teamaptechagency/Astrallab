@@ -103,7 +103,7 @@
             <li><span class="tick" aria-hidden="true">✓</span> Uptime monitoring, we notice before you do</li>
             <li><span class="tick" aria-hidden="true">✓</span> Email support, replies within 2 working days</li>
           </ul>
-          <a class="btn btn--ghost" href="/shop/" style="margin-top:22px">Choose Basic</a>
+          <a class="btn btn--ghost" href="{{ route('shop') }}" style="margin-top:22px">Choose Basic</a>
         </article>
 
         <article class="card plan plan--popular" data-monthly="2500" data-six="13500" data-year="24000">
@@ -120,7 +120,7 @@
             <li><span class="tick" aria-hidden="true">✓</span> Monthly report in plain language</li>
             <li><span class="tick" aria-hidden="true">✓</span> WhatsApp support, same working day</li>
           </ul>
-          <a class="btn btn--primary" href="/shop/" style="margin-top:22px">Choose Growth</a>
+          <a class="btn btn--primary" href="{{ route('shop') }}" style="margin-top:22px">Choose Growth</a>
         </article>
 
         <article class="card plan" data-monthly="5000" data-six="27000" data-year="48000">
@@ -136,7 +136,7 @@
             <li><span class="tick" aria-hidden="true">✓</span> Monthly strategy call</li>
             <li><span class="tick" aria-hidden="true">✓</span> Priority support, replies within hours</li>
           </ul>
-          <a class="btn btn--ghost" href="/shop/" style="margin-top:22px">Choose Full service</a>
+          <a class="btn btn--ghost" href="{{ route('shop') }}" style="margin-top:22px">Choose Full service</a>
         </article>
 
       </div>
@@ -247,7 +247,7 @@
           fits — including if that is none of them.
         </p>
         <div class="hero-actions" style="justify-content:center">
-          <a class="btn btn--lg" href="/contact/" style="background:#fff;color:var(--brand-dark)">Ask us</a>
+          <a class="btn btn--lg" href="{{ route('contact') }}" style="background:#fff;color:var(--brand-dark)">Ask us</a>
         </div>
       </div>
     </div>
