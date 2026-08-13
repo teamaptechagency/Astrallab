@@ -24,6 +24,12 @@
       </div>
 
       <button class="btn btn--primary" type="submit" style="width:100%">Sign in</button>
+
+      {{-- Put where somebody who has just failed to sign in will look, rather
+           than in a document they would have to know exists. --}}
+      <p class="hint" style="text-align:center;margin-top:16px">
+        <a href="/apt-admin/recover" style="color:var(--ink-3)">Lost your password?</a>
+      </p>
     </form>
   </div>
 @endsection

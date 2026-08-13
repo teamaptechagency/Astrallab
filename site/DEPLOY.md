@@ -161,3 +161,23 @@ Check it is a folder, not a file called `assets\styles.css`.
 Rebuild the zip, upload, extract, overwrite. `.env` is not in the archive, so
 your settings survive. `astralab-app/storage` is only created when missing, so
 logs and sessions survive too.
+
+## Locked out of the console
+
+There is no reset email, deliberately: this console can revoke every customer's
+licence, and a reset link is a way in for whoever reaches the mailbox. Proving
+you own the server is the bar instead.
+
+1. Open File Manager and go to `astralab-app/storage/app/`.
+2. Create an empty file named exactly `recover` — no extension. Watch for file
+   managers that quietly add `.txt`.
+3. Open `https://your-domain/apt-admin/recover`.
+4. Set a new password. You have 30 minutes, and the file is deleted the moment
+   it is used.
+
+If the window closes before you finish, recreate the file — it is the file's
+modified time that counts.
+
+Anyone who can create that file already has your database credentials and could
+change the password row directly. This only saves them working out a bcrypt
+hash, so it adds no access that hosting control did not already give.

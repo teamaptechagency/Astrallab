@@ -93,6 +93,12 @@ Route::prefix('apt-admin')->group(function () {
     Route::post('/login', [AdminController::class, 'login'])->middleware('throttle:10,1');
     Route::post('/logout', [AdminController::class, 'logout']);
 
+    // Getting back in without a reset email, which this console must not have:
+    // it can revoke every customer's licence, and a reset link is a way in for
+    // whoever reaches the mailbox. Proof is a file on the server instead.
+    Route::get('/recover', [AdminController::class, 'recover']);
+    Route::post('/recover', [AdminController::class, 'resetPassword'])->middleware('throttle:10,1');
+
     Route::middleware('auth')->group(function () {
         Route::get('/settings', [AdminController::class, 'settings']);
         Route::post('/settings', [AdminController::class, 'saveSettings']);

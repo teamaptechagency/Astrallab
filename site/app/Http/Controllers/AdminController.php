@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\Recovery;
 use App\Support\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -143,6 +144,64 @@ class AdminController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/apt-admin');
+    }
+
+    /**
+     * The way back in when the password is gone.
+     *
+     * Shown whether or not the window is open, because somebody who has just
+     * been told "incorrect password" needs to read what to do next, not another
+     * 404. The form only appears once the file exists.
+     */
+    public function recover()
+    {
+        return view('admin.recover', [
+            'open' => Recovery::isOpen(),
+            'minutes' => (int) ceil(Recovery::remaining() / 60),
+            'path' => 'storage/app/recover',
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        // Checked again here, not only when the form was drawn. The window can
+        // close between loading the page and submitting it, and a form that
+        // still worked afterwards would make the expiry decorative.
+        abort_unless(Recovery::isOpen(), 403, 'The recovery window has closed. Create the file again.');
+
+        $data = $request->validate([
+            'email' => ['required', 'email', 'max:190'],
+            'name' => ['nullable', 'string', 'max:120'],
+            'password' => ['required', 'string', 'min:10', 'confirmed'],
+        ]);
+
+        $operator = User::firstWhere('email', $data['email']);
+
+        if ($operator) {
+            $operator->update(['password' => Hash::make($data['password'])]);
+        } else {
+            // No account with that address. Creating one is deliberate: if the
+            // only account was lost entirely — a mistyped email at install —
+            // resetting nothing would leave the console permanently shut.
+            $operator = User::create([
+                'name' => $data['name'] ?: 'Operator',
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+            ]);
+        }
+
+        $closed = Recovery::consume();
+
+        Auth::login($operator);
+        $request->session()->regenerate();
+
+        return redirect('/apt-admin')->with(
+            'ok',
+            $closed
+                ? 'Password set. The recovery file has been deleted.'
+                : 'Password set — but the recovery file could not be deleted. Remove '
+                    .'storage/app/recover yourself, or anyone reaching it can reset this again.'
+        );
     }
 
     public function settings()
