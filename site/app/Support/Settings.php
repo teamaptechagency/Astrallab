@@ -98,6 +98,34 @@ class Settings
                 'group' => 'The business',
                 'rules' => ['nullable', 'integer', 'min:0', 'max:365'],
             ],
+
+            /*
+             * The shop's link to the hub.
+             *
+             * Here rather than in .env because .env means a file manager, and a
+             * file manager means "save as .env.txt" and an afternoon. These two
+             * are the whole connection: where to ask, and what to say when
+             * asking.
+             */
+            'hub_url' => [
+                'config' => 'astralab.hub_url',
+                'label' => 'Hub address',
+                'hint' => 'Where orders are sent and licences are issued. https://manage.astrallabs.uk',
+                'group' => 'The licence hub',
+                'rules' => ['nullable', 'url', 'max:190'],
+            ],
+            'store_secret' => [
+                'config' => 'astralab.store_secret',
+                'label' => 'Store secret',
+                'hint' => 'From the hub — Settings → API config, or the STORE_API_SECRET line in its .env. '
+                    .'It must match exactly, or every order is refused and paying customers receive nothing.',
+                // Never rendered back into the page, and an empty box means
+                // "leave it alone" rather than "erase it". A secret shown on a
+                // screen is a secret in a screenshot.
+                'secret' => true,
+                'group' => 'The licence hub',
+                'rules' => ['nullable', 'string', 'max:190'],
+            ],
         ];
     }
 
@@ -137,6 +165,16 @@ class Settings
         $values = [];
 
         foreach (self::fields() as $key => $field) {
+            // A secret is never handed back to the page. The form shows an
+            // empty box and says whether one is set — enough to answer "is it
+            // configured?" without putting the value in a screenshot, a
+            // browser cache, or over anybody's shoulder.
+            if ($field['secret'] ?? false) {
+                $values[$key] = '';
+
+                continue;
+            }
+
             // The saved value if there is one, otherwise whatever the page is
             // actually using — so the form shows the truth rather than blanks
             // beside a site that plainly has a company name on it.
@@ -144,5 +182,19 @@ class Settings
         }
 
         return $values;
+    }
+
+    /** Which settings hold a secret, and whether each one has been given a value. */
+    public static function secretsSet(): array
+    {
+        $set = [];
+
+        foreach (self::fields() as $key => $field) {
+            if ($field['secret'] ?? false) {
+                $set[$key] = (Setting::get($key) ?? (string) config($field['config'])) !== '';
+            }
+        }
+
+        return $set;
     }
 }

@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\Hub;
 use App\Support\Recovery;
 use App\Support\Settings;
 use App\Support\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -231,6 +233,95 @@ class AdminController extends Controller
         return view('admin.settings', [
             'groups' => Settings::grouped(),
             'values' => Settings::current(),
+            // Whether each secret has a value — never what it is.
+            'secrets' => Settings::secretsSet(),
+        ]);
+    }
+
+    /**
+     * Ask the hub whether this shop is talking to it.
+     *
+     * "Saved" only ever meant the values were written down. This is the only
+     * thing that answers whether they are right — and it separates the three
+     * ways it can be wrong, because "it does not work" sends somebody checking
+     * the wrong one of them.
+     */
+    public function testHub()
+    {
+        $base = rtrim((string) config('astralab.hub_url'), '/');
+
+        if ($base === '') {
+            return back()->with('hub', [
+                'ok' => false,
+                'headline' => 'No hub address',
+                'detail' => 'Fill in the hub address above and save, then try again.',
+            ]);
+        }
+
+        // Cleared first: otherwise a test right after fixing the address is
+        // answered from the five-minute cache and reports the old failure.
+        Cache::forget('hub.catalogue');
+
+        $catalogue = Hub::catalogue();
+
+        if (! $catalogue['ok']) {
+            return back()->with('hub', [
+                'ok' => false,
+                'headline' => 'The hub did not answer',
+                'detail' => $base.'/api/v1/catalogue could not be read. Check the address is exactly right '
+                    .'and that the hub is up — that page is public, so you can open it in a browser yourself.',
+            ]);
+        }
+
+        // Reached, and reachable without the secret. Whether the secret is
+        // accepted is a different question, and it is the one that decides
+        // whether an order can be placed at all.
+        $secret = (string) config('astralab.store_secret');
+
+        if ($secret === '') {
+            return back()->with('hub', [
+                'ok' => false,
+                'headline' => 'The hub answered, but no store secret is set',
+                'detail' => 'Orders would be refused. Paste the secret above and save.',
+            ]);
+        }
+
+        $accepted = Hub::secretAccepted();
+
+        if (! $accepted) {
+            return back()->with('hub', [
+                'ok' => false,
+                'headline' => 'The hub answered, and refused the secret',
+                'detail' => 'The two do not match. Copy STORE_API_SECRET from the hub again — it must be '
+                    .'identical, with no space at either end.',
+            ]);
+        }
+
+        $products = count($catalogue['products']);
+        $methods = count($catalogue['payment_methods']);
+
+        // Connected, which is not the same as ready to sell — and saying so
+        // now saves finding out from a customer.
+        $missing = [];
+
+        if ($products === 0) {
+            $missing[] = 'no product has a price yet (Products, on the hub)';
+        }
+
+        if ($methods === 0) {
+            $missing[] = 'no payment method is switched on with a number (Settings → Payments, on the hub)';
+        }
+
+        return back()->with('hub', [
+            'ok' => $missing === [],
+            'headline' => $missing === []
+                ? 'Connected — '.$products.' '.\Illuminate\Support\Str::plural('product', $products)
+                    .' and '.$methods.' '.\Illuminate\Support\Str::plural('payment method', $methods)
+                : 'Connected, but the shop has nothing to sell',
+            'detail' => $missing === []
+                ? 'The shop can take orders. A sale appears on the hub under Orders, and the licence is '
+                    .'issued when you accept the payment.'
+                : 'The secret is accepted and the hub is answering, but '.implode(', and ', $missing).'.',
         ]);
     }
 
@@ -250,9 +341,19 @@ class AdminController extends Controller
         ]);
 
         $values = [];
-        foreach (array_keys($fields) as $key) {
+        foreach ($fields as $key => $field) {
             $input = $data[str_replace('.', '_', $key)] ?? null;
-            $values[$key] = ($input === null || $input === '') ? null : (string) $input;
+            $empty = $input === null || $input === '';
+
+            // An empty secret means "leave it as it is", not "erase it". The
+            // box arrives empty because the value is never rendered back into
+            // the page — so without this, saving any other field here would
+            // wipe the one thing nobody can retype from memory.
+            if ($empty && ($field['secret'] ?? false)) {
+                continue;
+            }
+
+            $values[$key] = $empty ? null : (string) $input;
         }
 
         Setting::putMany($values);

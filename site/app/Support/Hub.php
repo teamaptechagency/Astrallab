@@ -69,6 +69,32 @@ class Hub
         }
     }
 
+    /**
+     * Does the hub accept our secret?
+     *
+     * Asked by requesting an order that does not exist. A wrong secret is
+     * refused before the hub ever looks for it, so 401 means "not this shop"
+     * and 404 means "this shop, no such order" — which is the answer we want.
+     *
+     * Deliberately not a matter of comparing strings here: the only opinion
+     * that counts is the hub's.
+     */
+    public static function secretAccepted(): bool
+    {
+        try {
+            $response = Http::timeout(8)
+                ->withToken((string) config('astralab.store_secret'))
+                ->acceptJson()
+                ->get(self::base().'/api/v1/orders/AL-CONNECTION-TEST');
+
+            return $response->status() !== 401;
+        } catch (Throwable $e) {
+            Log::warning('The hub could not be asked about the store secret: '.$e->getMessage());
+
+            return false;
+        }
+    }
+
     /** One product out of the catalogue, or null. */
     public static function product(string $slug): ?array
     {

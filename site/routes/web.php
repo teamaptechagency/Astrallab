@@ -126,5 +126,9 @@ Route::domain(config('astralab.manage_host') ?: null)->prefix('apt-admin')->grou
 
         Route::get('/settings', [AdminController::class, 'settings']);
         Route::post('/settings', [AdminController::class, 'saveSettings']);
+
+        // Asked of the hub itself. "Saved" only means the values were written
+        // down; this is the only thing that says whether they are right.
+        Route::post('/settings/test', [AdminController::class, 'testHub'])->middleware('throttle:10,1');
     });
 });
