@@ -207,18 +207,32 @@ class Package extends Command
         /*
          * Where the application lives, relative to this file.
          *
-         * Beside it — astralab-app/ next to public_html/ — or directly
-         * underneath, if the archive was extracted one level in. Both are
-         * checked, so neither needs anybody to edit PHP through a file manager.
+         * Three places, furthest from the web root first. astralab-app/ holds
+         * .env; inside the web root those files have URLs, and the only thing
+         * in front of them is an .htaccess that denies everything — which
+         * works until a server stops honouring .htaccess, and then stops
+         * silently. Two levels up is outside every document root on the
+         * account: protection by the filesystem rather than by a rule.
          */
-        $astralab = is_dir(__DIR__.'/../astralab-app')
-            ? __DIR__.'/../astralab-app'
-            : __DIR__.'/astralab-app';
+        $candidates = [
+            __DIR__.'/../../astralab-app',
+            __DIR__.'/../astralab-app',
+            __DIR__.'/astralab-app',
+        ];
 
-        if (! is_file($astralab.'/vendor/autoload.php')) {
+        $astralab = null;
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate.'/vendor/autoload.php')) {
+                $astralab = $candidate;
+                break;
+            }
+        }
+
+        if ($astralab === null) {
             http_response_code(500);
-            exit('The application folder is not where this file expects it. '
-                .'astralab-app/ should be beside public_html, or beside this index.php.');
+            exit('The application folder was not found. astralab-app/ should be beside '
+                .'public_html, beside this index.php, or two levels above it.');
         }
 
         PHP;
