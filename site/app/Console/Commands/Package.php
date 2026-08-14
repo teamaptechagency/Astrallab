@@ -51,6 +51,13 @@ class Package extends Command
         '.gitignore',
         '.gitattributes',
         'node_modules',
+        // The front end has no build step — no Blade file references @vite, and
+        // the stylesheets are plain CSS. These are Laravel's defaults, and
+        // shipping them says a toolchain is involved on hosting where none
+        // exists and none is needed.
+        'package.json',
+        'package-lock.json',
+        'vite.config.js',
         'tests',
         'storage/logs',
         'storage/framework/cache/data',
