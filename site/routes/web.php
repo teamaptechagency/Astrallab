@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\ShopController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -74,7 +75,14 @@ Route::get('/refund', [LegalController::class, 'refund'])->name('refund');
 | registering a redirect from the trailing-slash form makes it redirect /shop
 | to itself until the browser gives up.
 */
-Route::view('/shop', 'pages.shop')->name('shop');
+Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+Route::get('/shop/{slug}', [ShopController::class, 'product'])->name('product');
+Route::post('/shop/{slug}', [ShopController::class, 'place'])->middleware('throttle:10,1')->name('order.place');
+Route::post('/shop/{slug}/review', [ShopController::class, 'review'])->middleware('throttle:5,10')->name('review');
+
+// Addressed by the hub's reference, which is random rather than sequential: an
+// order number that can be counted up lets anybody read the next customer's.
+Route::get('/order/{reference}', [ShopController::class, 'order'])->name('order');
 
 /*
 |--------------------------------------------------------------------------

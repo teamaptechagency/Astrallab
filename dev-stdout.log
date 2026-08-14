@@ -1,0 +1,11 @@
+
+> astralab-manage@0.1.0 dev
+> next dev -p 3200
+
+   ▲ Next.js 15.5.23
+   - Local:        http://localhost:3200
+   - Network:      http://100.103.148.62:3200
+   - Environments: .env
+
+ ✓ Starting...
+[?25h

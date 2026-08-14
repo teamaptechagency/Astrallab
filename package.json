@@ -14,6 +14,7 @@
     "keys:generate": "tsx scripts/generate-keys.ts",
     "smoke": "tsx --env-file=.env scripts/smoke-test.ts",
     "db:purge": "tsx --env-file=.env scripts/purge-test-data.ts",
+    "operator:password": "tsx --env-file=.env scripts/reset-operator-password.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

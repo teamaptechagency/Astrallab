@@ -55,6 +55,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | The hub
+    |--------------------------------------------------------------------------
+    |
+    | manage.astrallabs.uk. This site sells; the hub decides that somebody has
+    | paid, and issues the licence.
+    |
+    | The split matters more than it looks. This application is on the public
+    | internet with a shop on it. If it could mint licences, anybody who got
+    | into it could mint licences — so it cannot. It holds a secret that lets it
+    | ask, and nothing that lets it decide.
+    */
+    'hub_url' => env('ASTRALAB_HUB_URL', 'https://manage.astrallabs.uk'),
+
+    /*
+    | Shared with the hub, which compares it in constant time. It authorises
+    | placing an order and reading one back, and nothing else. Losing it does
+    | not let anybody issue a licence — it lets them place orders nobody paid
+    | for, which a human then declines.
+    */
+    'store_secret' => env('STORE_API_SECRET', ''),
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Installed marker
     |--------------------------------------------------------------------------
     |
