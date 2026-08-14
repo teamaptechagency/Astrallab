@@ -319,8 +319,21 @@ class SelfUpdate
         // Closed while the files are being swapped. Installs calling in get a
         // 503 and try later, which is the honest answer for the few seconds
         // when half the application is one build and half is another.
+        /*
+         * Thousands of files, written one at a time, on shared hosting.
+         *
+         * That is what outran PHP's execution limit: the request died in the
+         * middle, and everything after it — including the line that opens the
+         * site again — never ran. The site stayed closed and nothing on the
+         * server was going to change that.
+         */
+        @set_time_limit(0);
+        @ignore_user_abort(true);
+
         try {
-            Artisan::call('down', ['--retry' => 30]);
+            // Rendered, so the few seconds of downtime look like an
+            // explanation rather than a bare 503 on a white page.
+            Artisan::call('down', ['--retry' => 30, '--render' => 'errors.503']);
         } catch (Throwable) {
             // Not worth refusing the update over. Being unable to close is a
             // smaller problem than being unable to update at all.

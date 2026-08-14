@@ -267,8 +267,52 @@ class Package extends Command
 
         $original = file_get_contents($root.'/public/index.php');
         $original = preg_replace('/^<\?php\s*/', '', $original, 1);
+        $original = str_replace("__DIR__.'/../", '$astralab.\'/', $original);
 
-        return $preamble."\n".str_replace("__DIR__.'/../", '$astralab.\'/', $original);
+        /*
+         * Maintenance mode that outlives the request which set it is a bug.
+         *
+         * Installing a build closes the site, swaps thousands of files, and
+         * opens it again. When that ran past PHP's execution limit the request
+         * died in the middle — and the line that reopens never ran. The site
+         * stayed closed, the shop with it, and nothing on the server was ever
+         * going to change that. The only fix was deleting a file through a file
+         * manager: fine if you know, and a closed shop if you do not.
+         *
+         * Laravel checks for this file here, before the framework loads, so
+         * here is the only place the check can happen. Fifteen minutes is far
+         * longer than any swap and far shorter than a working day.
+         */
+        $selfHealing = <<<'PHP'
+        // Determine if the application is in maintenance mode...
+        if (file_exists($maintenance = $astralab.'/storage/framework/maintenance.php')) {
+            if (filemtime($maintenance) < time() - 900) {
+                @unlink($maintenance);
+            } else {
+                require $maintenance;
+            }
+        }
+        PHP;
+
+        $original = preg_replace(
+            '#// Determine if the application is in maintenance mode\.\.\.\s*\n'
+            .'if \(file_exists\(\$maintenance = \$astralab\.\'/storage/framework/maintenance\.php\'\)\) \{\s*\n'
+            .'\s*require \$maintenance;\s*\n\}#',
+            $selfHealing,
+            $original,
+            1,
+            $healed
+        );
+
+        if ($healed !== 1) {
+            // Said out loud rather than shipped quietly without it: the guard
+            // that keeps a failed update from becoming a permanent outage is
+            // not in the file any more.
+            $this->warn('The maintenance self-healing block could not be inserted into index.php.');
+            $this->line('  Laravel\'s public/index.php has changed. Check frontController() in this command.');
+        }
+
+        return $preamble."\n".$original;
     }
 
     /** @return iterable<string> */
