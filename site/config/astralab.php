@@ -55,6 +55,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | This build's version
+    |--------------------------------------------------------------------------
+    |
+    | Shown on the Updates screen and written into every archive the packager
+    | makes, so "which build is this site running?" has an answer that does not
+    | involve comparing file dates — which updating rewrites by definition.
+    |
+    | Bumped here by hand, because only a person knows whether a change was a
+    | fix or a feature.
+    */
+    'version' => env('ASTRALAB_VERSION', '1.0.0'),
+
+    /*
+    |--------------------------------------------------------------------------
     | The hub
     |--------------------------------------------------------------------------
     |
