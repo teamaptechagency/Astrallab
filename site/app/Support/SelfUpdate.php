@@ -330,10 +330,23 @@ class SelfUpdate
         @set_time_limit(0);
         @ignore_user_abort(true);
 
+        /*
+         * Closing the site is a risk, so it is only taken when it buys
+         * something.
+         *
+         * A full build replaces thousands of files and takes real seconds. An
+         * update build replaces about a hundred, in well under a second — and
+         * for that, going down trades a millisecond of inconsistency for the
+         * chance of a shop that never comes back up. That trade was wrong.
+         */
+        $swapIsLong = $inspection['files'] > 1000;
+
         try {
             // Rendered, so the few seconds of downtime look like an
             // explanation rather than a bare 503 on a white page.
-            Artisan::call('down', ['--retry' => 30, '--render' => 'errors.503']);
+            if ($swapIsLong) {
+                Artisan::call('down', ['--retry' => 30, '--render' => 'errors.503']);
+            }
         } catch (Throwable) {
             // Not worth refusing the update over. Being unable to close is a
             // smaller problem than being unable to update at all.

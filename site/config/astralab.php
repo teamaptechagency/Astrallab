@@ -65,7 +65,7 @@ return [
     | Bumped here by hand, because only a person knows whether a change was a
     | fix or a feature.
     */
-    'version' => env('ASTRALAB_VERSION', '1.0.3'),
+    'version' => env('ASTRALAB_VERSION', '1.0.4'),
 
     /*
     |--------------------------------------------------------------------------
