@@ -112,14 +112,51 @@ class Package extends Command
             $app++;
         }
 
-        // The front controller, pointed at its new neighbour rather than its
-        // parent. This is the edit everybody has to make by hand and half of
-        // them get wrong.
-        $zip->addFromString('public_html/index.php', str_replace(
-            "__DIR__.'/../",
-            "__DIR__.'/../astralab-app/",
-            file_get_contents($root.'/public/index.php')
-        ));
+        $zip->addFromString('public_html/index.php', $this->frontController($root));
+
+        /*
+         * A second front door, at the top of the archive.
+         *
+         * This assumes the domain points at the public_html that comes out of
+         * the zip, with the application beside it. Extracted one level in — and
+         * that is where a file manager puts it if you are already standing in
+         * public_html — the domain's folder has no index.php, so every page
+         * answers 403 Forbidden. Apache is not refusing the application; it has
+         * nothing to serve and will not list a directory.
+         *
+         * The fix was moving five files up a level by hand, with hidden files
+         * switched on so the .htaccess came too. That is a ritual, not a fix,
+         * and the failure it prevents looks exactly like broken software.
+         *
+         * So the zip brings its own. Whichever of the two folders the domain is
+         * aimed at, one of them answers. In the intended layout this pair lands
+         * outside the web root, where nothing can ask for it.
+         */
+        $zip->addFromString('index.php', $this->frontController($root));
+
+        $zip->addFromString('.htaccess', <<<'HTACCESS'
+        # Only used when the domain points at this folder rather than at
+        # public_html. See the note beside index.php in the packager.
+        <IfModule mod_rewrite.c>
+            <IfModule mod_negotiation.c>
+                Options -MultiViews -Indexes
+            </IfModule>
+
+            RewriteEngine On
+
+            RewriteCond %{HTTP:Authorization} .
+            RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+            # The shipped static files live one level down. Served from there
+            # rather than copied, so there is one of each.
+            RewriteRule ^(assets/.*|favicon\.(ico|svg)|robots\.txt|sitemap\.xml)$ public_html/$1 [L]
+
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteRule ^ index.php [L]
+        </IfModule>
+
+        HTACCESS);
 
         // Laravel keeps these directories with .gitignore files, so an archive
         // built from a clean checkout has no storage tree at all — and the
@@ -147,6 +184,49 @@ class Package extends Command
         $this->line('Then create .env on the server. See DEPLOY.md.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * The front controller, taught to find the application itself.
+     *
+     * Laravel's own index.php reaches up one level, which is right when public/
+     * sits inside the application. Here it does not: the application is beside
+     * the web root so that .env cannot be fetched.
+     *
+     * But where the web root *is* gets decided by hosting and by whoever is
+     * standing in a file manager. Two copies of this file ship, at the two
+     * places a domain might be pointed, and each finds the application in
+     * either position — so the one edit everybody has to make by hand, and half
+     * of them get wrong, is not an edit any more.
+     */
+    private function frontController(string $root): string
+    {
+        $preamble = <<<'PHP'
+        <?php
+
+        /*
+         * Where the application lives, relative to this file.
+         *
+         * Beside it — astralab-app/ next to public_html/ — or directly
+         * underneath, if the archive was extracted one level in. Both are
+         * checked, so neither needs anybody to edit PHP through a file manager.
+         */
+        $astralab = is_dir(__DIR__.'/../astralab-app')
+            ? __DIR__.'/../astralab-app'
+            : __DIR__.'/astralab-app';
+
+        if (! is_file($astralab.'/vendor/autoload.php')) {
+            http_response_code(500);
+            exit('The application folder is not where this file expects it. '
+                .'astralab-app/ should be beside public_html, or beside this index.php.');
+        }
+
+        PHP;
+
+        $original = file_get_contents($root.'/public/index.php');
+        $original = preg_replace('/^<\?php\s*/', '', $original, 1);
+
+        return $preamble."\n".str_replace("__DIR__.'/../", '$astralab.\'/', $original);
     }
 
     /** @return iterable<string> */
