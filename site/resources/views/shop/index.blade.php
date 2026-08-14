@@ -53,6 +53,16 @@
                 <p style="margin-top:14px;font-size:1.6rem;font-weight:700">
                   ৳{{ number_format($product['price'] / 100) }}
                   <span style="font-size:.9375rem;font-weight:400;color:#6b7280">once</span>
+
+                  @if (! empty($product['compare_price']))
+                    {{-- The old price beside the new one, never instead of it.
+                         The hub decides whether a discount is real; this only
+                         prints what it was given. --}}
+                    <s style="font-size:1rem;font-weight:400;color:#6b7280">৳{{ number_format($product['compare_price'] / 100) }}</s>
+                    <span style="font-size:.875rem;font-weight:600;color:#12a06d">
+                      {{ $product['discount'] }}% off
+                    </span>
+                  @endif
                 </p>
 
                 <p style="margin-top:4px;color:#6b7280;font-size:.9375rem">

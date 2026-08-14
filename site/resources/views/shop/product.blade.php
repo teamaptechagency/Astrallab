@@ -7,7 +7,19 @@
   <main>
     <section class="wrap page-head">
       <p class="eyebrow">{{ $product['name'] }}</p>
-      <h1 style="margin-top:12px">৳{{ number_format($product['price'] / 100) }}, once</h1>
+      <h1 style="margin-top:12px">
+        ৳{{ number_format($product['price'] / 100) }}, once
+        @if (! empty($product['compare_price']))
+          <s style="font-size:1.35rem;font-weight:400;color:#6b7280">৳{{ number_format($product['compare_price'] / 100) }}</s>
+        @endif
+      </h1>
+
+      @if (! empty($product['compare_price']))
+        <p style="margin-top:8px;color:#12a06d;font-weight:600">
+          Save ৳{{ number_format(($product['compare_price'] - $product['price']) / 100) }}
+          — {{ $product['discount'] }}% off
+        </p>
+      @endif
       <p class="lede" style="margin:18px auto 0">
         {{ $product['summary'] }}
       </p>

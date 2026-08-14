@@ -33,7 +33,9 @@ use ZipArchive;
  */
 class Package extends Command
 {
-    protected $signature = 'astralab:package {--out= : Where to write the zip}';
+    protected $signature = 'astralab:package
+                            {--out= : Where to write the zip}
+                            {--update : Leave out vendor/ — a small archive for a site that is already installed}';
 
     protected $description = 'Build the deployable archive for shared hosting';
 
@@ -77,7 +79,11 @@ class Package extends Command
     public function handle(): int
     {
         $root = base_path();
-        $out = $this->option('out') ?: $root.DIRECTORY_SEPARATOR.'astralab-site.zip';
+        $update = (bool) $this->option('update');
+        $version = (string) config('astralab.version', '1.0.0');
+
+        $out = $this->option('out') ?: $root.DIRECTORY_SEPARATOR
+            .'astralab-site'.($update ? '-update' : '').'-'.$version.'.zip';
 
         if (! extension_loaded('zip')) {
             $this->error('The zip extension is not loaded, so nothing can be packaged.');
@@ -106,6 +112,12 @@ class Package extends Command
                 continue;
             }
 
+            // An update build is the code only. vendor/ is most of the size
+            // and changes when composer.json does, which is rarely.
+            if ($update && str_starts_with($relative, 'vendor/')) {
+                continue;
+            }
+
             // public/ becomes public_html/; everything else goes below the web
             // root where a URL cannot reach it.
             if (str_starts_with($relative, 'public/')) {
@@ -118,6 +130,15 @@ class Package extends Command
             $zip->addFile($absolute, 'astralab-app/'.$relative);
             $app++;
         }
+
+        // What this build was made from. Without vendor/, the code that lands
+        // must run against the dependencies already here — and if they moved,
+        // it fails as a missing class, which reads as a corrupted update.
+        $zip->addFromString('astralab-app/astralab-build.json', json_encode([
+            'version' => $version,
+            'kind' => $update ? 'update' : 'full',
+            'lock' => hash_file('sha256', $root.'/composer.lock'),
+        ], JSON_PRETTY_PRINT));
 
         $zip->addFromString('public_html/index.php', $this->frontController($root));
 
