@@ -445,12 +445,39 @@ class SelfUpdate
      */
     private static function reopen(): void
     {
-        @unlink(storage_path('framework/maintenance.php'));
+        foreach (self::maintenanceFiles() as $file) {
+            @unlink($file);
+        }
+    }
+
+    /**
+     * Both of them, because there are two and only one of them decides.
+     *
+     * `down` is the flag Laravel actually reads. `maintenance.php` is the
+     * pre-rendered page the front controller serves when it exists. Removing
+     * only the second one takes the nice page away and leaves the site shut —
+     * which is exactly what happened: every update ended with the console
+     * closed and no way back except a file manager.
+     *
+     * @return array<int, string>
+     */
+    private static function maintenanceFiles(): array
+    {
+        return [
+            storage_path('framework/down'),
+            storage_path('framework/maintenance.php'),
+        ];
     }
 
     /** Whether the console is closed — including left closed by a failed run. */
     public static function isClosed(): bool
     {
-        return is_file(storage_path('framework/maintenance.php'));
+        foreach (self::maintenanceFiles() as $file) {
+            if (is_file($file)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -285,12 +285,33 @@ class Package extends Command
          */
         $selfHealing = <<<'PHP'
         // Determine if the application is in maintenance mode...
-        if (file_exists($maintenance = $astralab.'/storage/framework/maintenance.php')) {
-            if (filemtime($maintenance) < time() - 900) {
-                @unlink($maintenance);
-            } else {
-                require $maintenance;
+        //
+        // Two files, and only one of them decides. `down` is the flag the
+        // framework reads; maintenance.php is the pre-rendered page this file
+        // serves when it is there. Clearing one and not the other leaves the
+        // site shut with a nice page, or open with none — so both are cleared
+        // together, or neither is.
+        $astralabDown = [
+            $astralab.'/storage/framework/down',
+            $astralab.'/storage/framework/maintenance.php',
+        ];
+
+        $astralabClosedAt = 0;
+
+        foreach ($astralabDown as $astralabFile) {
+            if (file_exists($astralabFile)) {
+                $astralabClosedAt = max($astralabClosedAt, (int) filemtime($astralabFile));
             }
+        }
+
+        if ($astralabClosedAt > 0 && $astralabClosedAt < time() - 900) {
+            // A swap that died mid-flight. Fifteen minutes is far longer than
+            // any of them takes and far shorter than a working day.
+            foreach ($astralabDown as $astralabFile) {
+                @unlink($astralabFile);
+            }
+        } elseif (file_exists($maintenance = $astralab.'/storage/framework/maintenance.php')) {
+            require $maintenance;
         }
         PHP;
 
