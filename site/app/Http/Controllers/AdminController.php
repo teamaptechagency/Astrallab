@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\UpdateEntry;
+use App\Support\ChunkedUpload;
 use App\Support\Hub;
+use App\Support\SelfUpdate;
 use App\Support\Recovery;
 use App\Support\Settings;
 use App\Support\Updates;
@@ -13,6 +16,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -218,7 +222,21 @@ class AdminController extends Controller
      */
     public function applyUpdates()
     {
+        // Taken before, because afterwards there is nothing pending to name and
+        // "some migrations ran" is not a note anybody can use later.
+        $pending = Updates::pending();
+
         $result = Updates::apply();
+
+        if ($result["ok"]) {
+            UpdateEntry::record(
+                UpdateEntry::DATABASE,
+                $pending === []
+                    ? "Checked — nothing was waiting"
+                    : count($pending)." ".Str::plural("change", count($pending))." applied",
+                implode("\n", $pending) ?: null,
+            );
+        }
 
         return back()->with(
             $result["ok"] ? "ok" : "problem",
@@ -226,6 +244,26 @@ class AdminController extends Controller
                 ? "Database updated."
                 : "The update failed: ".$result["message"]
         );
+    }
+
+    /**
+     * Keeping this site current: a new build, the database changes it brought,
+     * and what has already been done.
+     *
+     * There is no shell on this hosting and no git pull. This screen is the
+     * replacement — for a bug fix, a new feature, or anything else that arrives
+     * as replaced files.
+     */
+    public function updates()
+    {
+        return view("admin.updates", [
+            "pending" => Updates::pending(),
+            "limit" => SelfUpdate::limits()["effective"],
+            "chunk" => ChunkedUpload::chunkSize(),
+            "installed" => Setting::get("build.installed"),
+            "log" => UpdateEntry::recent(),
+            "version" => (string) config("astralab.version", "unversioned"),
+        ]);
     }
 
     public function settings()

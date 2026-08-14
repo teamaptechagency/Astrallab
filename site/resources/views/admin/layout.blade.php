@@ -7,6 +7,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>@yield('title', 'Console') — Astra Lab</title>
 <meta name="robots" content="noindex, nofollow">
@@ -19,6 +20,8 @@
     position: sticky; top: 0; z-index: 5;
   }
   .console-bar .wrap { display: flex; align-items: center; gap: 20px; height: 60px; }
+  .upload-bar { height: 5px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; margin-top: 12px; }
+  .upload-bar i { display: block; height: 100%; width: 0; background: var(--brand); transition: width .18s ease-out; }
   .console-nav { margin-left: auto; display: flex; align-items: center; gap: 6px; }
   .console-nav a, .console-nav button {
     font: inherit; font-size: .9375rem; padding: 8px 12px; border-radius: 8px;
@@ -65,6 +68,7 @@
       <nav class="console-nav">
         <a href="/apt-admin" @class(['is-here' => request()->is('apt-admin')])>Overview</a>
         <a href="/apt-admin/settings" @class(['is-here' => request()->is('apt-admin/settings')])>Settings</a>
+        <a href="/apt-admin/updates" @class(['is-here' => request()->is('apt-admin/updates')])>Updates</a>
         <a href="/" target="_blank" rel="noopener">View site ↗</a>
         <form method="post" action="/apt-admin/logout" style="display:inline">
           @csrf
@@ -87,5 +91,6 @@
   @yield('content')
 </main>
 
+<script src="{{ asset('assets/upload.js') }}"></script>
 </body>
 </html>

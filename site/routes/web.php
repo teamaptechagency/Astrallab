@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -122,7 +123,13 @@ Route::domain(config('astralab.manage_host') ?: null)->prefix('apt-admin')->grou
         // Running the migrations that came with the last upload. Behind the
         // sign-in, unlike the installer: by this point there is somebody to
         // sign in as, so there is no reason for it to be open.
+        Route::get('/updates', [AdminController::class, 'updates'])->name('admin.updates');
         Route::post('/updates', [AdminController::class, 'applyUpdates']);
+
+        // A build arrives in pieces: PHP will not take it in one request.
+        Route::post('/uploads/begin', [UploadController::class, 'begin'])->name('upload.begin');
+        Route::post('/uploads/chunk', [UploadController::class, 'chunk'])->name('upload.chunk');
+        Route::post('/uploads/finish', [UploadController::class, 'finish'])->name('upload.finish');
 
         Route::get('/settings', [AdminController::class, 'settings']);
         Route::post('/settings', [AdminController::class, 'saveSettings']);
