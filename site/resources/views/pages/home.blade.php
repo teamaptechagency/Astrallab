@@ -59,21 +59,61 @@ Licence key: ASTRA-7K2M9-QX4RT-8NBVC-3WHDZ
           support. Live versions below come straight from our release server.</p>
       </div>
 
+      {{-- Rendered here, by the same call the shop page makes.
+
+           This used to be fetched from the browser, across origins, from
+           /api/public/products — an address taken from the plan rather than
+           from the routing table, and one that has never existed. So the one
+           section that says what this company sells has been apologising for a
+           catalogue outage that was not happening.
+
+           Server-side also means the products are in the HTML: no second
+           address to keep in step, no cross-origin request to be blocked, and
+           something to read for anybody whose JavaScript never runs — search
+           engines included. --}}
       <div class="grid grid--2" id="product-grid" style="margin-top:36px">
-        <!-- Filled from manage.astralab's public catalogue. Placeholders below
-             are what a visitor sees for the moment before it arrives. -->
-        <article class="product">
-          <div class="product-top">
-            <h3 class="skeleton">Loading product</h3>
-          </div>
-          <p class="skeleton">Fetching the current catalogue from our release server.</p>
-        </article>
-        <article class="product">
-          <div class="product-top">
-            <h3 class="skeleton">Loading product</h3>
-          </div>
-          <p class="skeleton">Fetching the current catalogue from our release server.</p>
-        </article>
+        @forelse ($catalogue['products'] as $product)
+          <article class="product">
+            <div class="product-top">
+              <h3>{{ $product['name'] }}</h3>
+            </div>
+
+            @if (! empty($product['summary']))
+              <p>{{ $product['summary'] }}</p>
+            @endif
+
+            <p style="margin-top:14px;font-size:1.5rem;font-weight:700">
+              ৳{{ number_format($product['price'] / 100) }}
+              <span style="font-size:.875rem;font-weight:400;opacity:.7">once</span>
+
+              @if (! empty($product['compare_price']))
+                <s style="font-size:1rem;font-weight:400;opacity:.6">৳{{ number_format($product['compare_price'] / 100) }}</s>
+                <span style="font-size:.8125rem;font-weight:600;color:var(--brand)">{{ $product['discount'] }}% off</span>
+              @endif
+            </p>
+
+            <p style="margin-top:4px;opacity:.7;font-size:.9375rem">
+              {{ $product['seats'] }} {{ \Illuminate\Support\Str::plural('domain', $product['seats']) }}
+              · updates and support included
+            </p>
+
+            <p style="margin-top:18px">
+              <a class="btn btn--primary" href="{{ route('product', $product['slug']) }}">Buy it</a>
+            </p>
+          </article>
+        @empty
+          <article class="product">
+            <div class="product-top"><h3>Nothing on sale just yet</h3></div>
+            <p>
+              @if ($catalogue['ok'])
+                Check back shortly, or
+              @else
+                Our release server is not answering just now —
+              @endif
+              <a href="{{ route('contact') }}">message us</a> and we will send the details directly.
+            </p>
+          </article>
+        @endforelse
       </div>
     </div>
   </section>
@@ -150,10 +190,34 @@ Licence key: ASTRA-7K2M9-QX4RT-8NBVC-3WHDZ
         <h2>One payment. One store. No renewals.</h2>
       </div>
 
+      {{-- The same number as the Products section above, from the same place.
+
+           It was typed in here as ৳1,050, and by the time anybody noticed, the
+           catalogue was charging something else — so this page quoted two
+           different prices for one product, about a screen apart. A price
+           belongs in the place that charges it. --}}
+      @php($cms = collect($catalogue['products'])->firstWhere('slug', 'astralab-cms')
+        ?? ($catalogue['products'][0] ?? null))
+
       <div style="max-width:520px;margin:36px auto 0">
         <div class="price-card">
-          <p class="eyebrow">E-commerce CMS</p>
-          <p class="price">৳1,050<small> once</small></p>
+          <p class="eyebrow">{{ $cms['name'] ?? 'E-commerce CMS' }}</p>
+
+          @if ($cms)
+            <p class="price">৳{{ number_format($cms['price'] / 100) }}<small> once</small></p>
+
+            @if (! empty($cms['compare_price']))
+              <p style="margin-top:2px">
+                <s style="opacity:.6">৳{{ number_format($cms['compare_price'] / 100) }}</s>
+                <span style="font-weight:600;color:var(--brand)">{{ $cms['discount'] }}% off</span>
+              </p>
+            @endif
+          @else
+            {{-- The hub is not answering. Better to send them to the shop,
+                 which will say so plainly, than to invent a figure here. --}}
+            <p class="price" style="font-size:1.5rem">Ask us for today's price</p>
+          @endif
+
           <p style="color:var(--ink-2);font-size:.9375rem;margin-top:6px">
             One licence, one live domain. Move it to another domain whenever you like.
           </p>

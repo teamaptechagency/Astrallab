@@ -34,11 +34,24 @@
           <div class="card" style="margin-top:14px">
             <h3>What now</h3>
             <ol style="margin:10px 0 0 18px;line-height:1.9">
-              <li>Download the installer and upload it to your hosting.</li>
+              <li>Download the installer below and upload it to your hosting.</li>
               <li>Open it in your browser and paste the key above.</li>
               <li>Follow the <a href="{{ route('docs') }}">install guide</a> — most
                   people are live the same afternoon.</li>
             </ol>
+
+            {{-- This line used to say "download the installer" with nothing to
+                 download: no link, no route, nothing. Anybody who bought was
+                 told to fetch a file that was never offered. --}}
+            <p style="margin-top:16px">
+              <a class="btn btn--primary" href="{{ route('installer', $order->product_slug) }}">
+                Download the installer
+              </a>
+              <span style="display:block;margin-top:8px;opacity:.7;font-size:.9375rem">
+                One small PHP file, about 16&nbsp;KB. It fetches the rest itself, so
+                there is nothing large to upload over a slow connection.
+              </span>
+            </p>
           </div>
         @elseif (! $order->isPaid())
           <div class="card">

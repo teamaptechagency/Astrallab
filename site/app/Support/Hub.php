@@ -95,6 +95,59 @@ class Hub
         }
     }
 
+    /**
+     * The installer for a product.
+     *
+     * Fetched through this site rather than linked straight at the hub, for two
+     * reasons: a buyer who has just paid stays on the address they paid at, and
+     * when the hub is having a bad afternoon they get our sentence about it
+     * instead of somebody else's error page on a domain they do not recognise.
+     *
+     * Not cached. It is built from whatever release is current, and a customer
+     * who comes back after we publish must not be handed yesterday's copy.
+     *
+     * @return array{ok: bool, source: string, filename: string, message: string}
+     */
+    public static function installer(string $slug): array
+    {
+        try {
+            $response = Http::timeout(20)
+                ->acceptJson()
+                ->get(self::base().'/api/v1/installer/'.urlencode($slug));
+        } catch (Throwable $e) {
+            Log::error('The installer could not be fetched from the hub: '.$e->getMessage());
+
+            return [
+                'ok' => false,
+                'source' => '',
+                'filename' => '',
+                'message' => 'We could not reach our release server just now. Please try again in a '
+                    .'moment — your licence key is safe and this page will keep working.',
+            ];
+        }
+
+        if (! $response->successful()) {
+            // The hub says why when it is a 409 — nothing published yet — and
+            // that sentence is more use than anything this side could invent.
+            Log::error('The hub refused an installer request: '.$response->status().' '.$response->body());
+
+            return [
+                'ok' => false,
+                'source' => '',
+                'filename' => '',
+                'message' => $response->json('message')
+                    ?: 'That installer is not available just now. Please message us and we will send it directly.',
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'source' => $response->body(),
+            'filename' => $slug.'-installer.php',
+            'message' => '',
+        ];
+    }
+
     /** One product out of the catalogue, or null. */
     public static function product(string $slug): ?array
     {

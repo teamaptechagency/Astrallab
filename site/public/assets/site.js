@@ -1,23 +1,15 @@
 // astrallabs.uk — the only script on the site.
 //
-// Two jobs: the mobile menu, and filling the product grid from the hub's
-// public catalogue API so version numbers and availability are never stale
-// copy that someone forgot to update after a release.
-
-// Where the catalogue comes from.
+// The mobile menu and the care-plan toggle. It used to fill the product grid
+// as well, by fetching /api/public/products from the hub — an address taken
+// from the plan rather than from the routing table, and one that has never
+// existed. So the front page apologised for a catalogue outage that was not
+// happening, for as long as anybody had looked at it.
 //
-// Worked out from the address bar rather than pasted into every page: this
-// site has no build step, and a hard-coded production URL is exactly the kind
-// of thing that is still pointing at localhost on the day it goes live.
-// Anything served from a real domain talks to the real hub; anything on a
-// developer's machine talks to theirs.
-//
-// window.ASTRALAB_HUB still wins, for a staging hub or for the WordPress
-// template later on.
-const ON_A_DEV_MACHINE = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
-const HUB =
-  window.ASTRALAB_HUB ||
-  (ON_A_DEV_MACHINE ? "http://localhost:3200" : "https://manage.astrallabs.uk");
+// The products are rendered server-side now, by the same call the shop page
+// makes: one address to keep in step instead of two, no cross-origin request
+// to be blocked, and something in the HTML for readers without JavaScript.
+// See pages/home.blade.php.
 
 /* ---- mobile menu ---- */
 const toggle = document.querySelector(".nav-toggle");
@@ -42,90 +34,6 @@ if (toggle && nav) {
     toggle.setAttribute("aria-expanded", String(!isMobile()));
   });
 }
-
-/* ---- product catalogue ---- */
-const grid = document.getElementById("product-grid");
-
-function escapeHtml(value) {
-  return String(value).replace(
-    /[&<>"']/g,
-    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
-  );
-}
-
-function productCard(product) {
-  const available = product.available;
-  const size = product.downloadSizeBytes
-    ? `${(product.downloadSizeBytes / 1048576).toFixed(1)} MB`
-    : null;
-
-  // Pills only appear when there is something true to put in them. An empty
-  // pill, or one reading "unknown", is worse than no pill at all.
-  const meta = available
-    ? [`v${escapeHtml(product.latestVersion)}`, size, "Free updates", "One-time payment"]
-    : ["In development", "Same licence, same updates"];
-
-  return `
-    <article class="product${available ? "" : " product--soon"}">
-      <div class="product-head">
-        <span class="product-mark" aria-hidden="true">${escapeHtml(product.name.charAt(0))}</span>
-        <div class="product-title">
-          <h3>${escapeHtml(product.name)}</h3>
-          <span class="product-status${available ? "" : " product-status--soon"}">
-            ${available ? "Available now" : "Coming soon"}
-          </span>
-        </div>
-      </div>
-
-      <p class="product-summary">${escapeHtml(product.summary || "")}</p>
-
-      <ul class="product-meta">
-        ${meta.filter(Boolean).map((m) => `<li>${m}</li>`).join("")}
-      </ul>
-
-      ${
-        available
-          ? `${
-              product.releaseNotes
-                ? `<p class="product-latest"><strong>Latest release:</strong> ${escapeHtml(product.releaseNotes)}</p>`
-                : ""
-            }
-            <a class="btn btn--primary product-cta" href="/shop/">Buy now</a>`
-          : // Not a dead grey button. Someone reading an unreleased product's
-            // card is a lead worth capturing rather than a dead end.
-            `<a class="btn btn--ghost product-cta" href="/contact/">Tell me when it is ready</a>`
-      }
-    </article>`;
-}
-
-async function loadCatalogue() {
-  if (!grid) return;
-
-  try {
-    const res = await fetch(`${HUB}/api/public/products`, { mode: "cors" });
-    if (!res.ok) throw new Error(`hub responded ${res.status}`);
-
-    const { products } = await res.json();
-    if (!Array.isArray(products) || products.length === 0) {
-      grid.innerHTML = `<p style="color:var(--ink-3)">Nothing on sale just yet — check back shortly.</p>`;
-      return;
-    }
-
-    grid.innerHTML = products.map(productCard).join("");
-  } catch (err) {
-    // Never leave shimmering placeholders behind. A visitor seeing a permanent
-    // loading state assumes the whole site is broken; an honest line plus a
-    // working contact route does not lose the sale.
-    console.error("[astralab] catalogue unavailable:", err);
-    grid.innerHTML = `
-      <p style="color:var(--ink-3)">
-        Our catalogue service is briefly unavailable.
-        <a href="/contact/" style="color:var(--brand)">Contact us</a> and we will send the details directly.
-      </p>`;
-  }
-}
-
-loadCatalogue();
 
 /* ---- care plan billing period ---- */
 //

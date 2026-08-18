@@ -19,6 +19,25 @@ use Illuminate\Validation\Rule;
  */
 class ShopController extends Controller
 {
+    /**
+     * The front page, with the catalogue already in it.
+     *
+     * It used to fetch this from the browser, across origins, from an address
+     * that never existed — /api/public/products, a name from the plan rather
+     * than from the routing table. So the one section that says what this
+     * company sells has been apologising for a catalogue outage that was not
+     * happening.
+     *
+     * Rendered here instead, by the same call the shop page makes. No second
+     * address to keep in step, no cross-origin request to be blocked, and the
+     * products are in the HTML for anybody whose JavaScript never runs —
+     * including whatever reads the page for search results.
+     */
+    public function home()
+    {
+        return view('pages.home', ['catalogue' => Hub::catalogue()]);
+    }
+
     /** What is for sale. */
     public function index()
     {
@@ -112,6 +131,33 @@ class ShopController extends Controller
         }
 
         return view('shop.order', ['order' => $order]);
+    }
+
+    /**
+     * The installer, handed to somebody who has bought.
+     *
+     * Sent as a download and never rendered — it is a .php file, and served
+     * inline it is the sort of thing a browser offers to open and a proxy
+     * decides to have an opinion about.
+     */
+    public function installer(string $slug)
+    {
+        abort_if(! Hub::product($slug), 404);
+
+        $installer = Hub::installer($slug);
+
+        if (! $installer['ok']) {
+            // Back where they came from with the reason, rather than a bare
+            // error page. Somebody who has just paid should not be looking at a
+            // stack trace.
+            return back()->with('problem', $installer['message']);
+        }
+
+        return response($installer['source'], 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$installer['filename'].'"',
+            'Cache-Control' => 'no-store',
+        ]);
     }
 
     /**

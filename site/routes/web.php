@@ -52,7 +52,7 @@ Route::middleware(['not-installed', 'throttle:20,1'])->group(function () {
 |
 */
 
-Route::view('/', 'pages.home')->name('home');
+Route::get('/', [ShopController::class, 'home'])->name('home');
 Route::view('/docs', 'pages.docs')->name('docs');
 Route::view('/services', 'pages.services')->name('services');
 Route::view('/contact', 'pages.contact')->name('contact');
@@ -84,6 +84,20 @@ Route::post('/shop/{slug}/review', [ShopController::class, 'review'])->middlewar
 // Addressed by the hub's reference, which is random rather than sequential: an
 // order number that can be counted up lets anybody read the next customer's.
 Route::get('/order/{reference}', [ShopController::class, 'order'])->name('order');
+
+/*
+| The installer.
+|
+| Open, like the hub endpoint behind it, because the file is inert without a
+| licence key — it carries a product name and an address and nothing else. The
+| thing worth guarding is the key, and the key is guarded.
+|
+| Throttled all the same: each request makes this site fetch a file from the
+| hub, and no visitor needs to do that twenty times a minute.
+*/
+Route::get('/installer/{slug}', [ShopController::class, 'installer'])
+    ->middleware('throttle:20,1')
+    ->name('installer');
 
 /*
 |--------------------------------------------------------------------------
