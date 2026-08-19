@@ -1,14 +1,14 @@
 {
-  "version": 2,
+  "//": "The documented shape for this runtime: functions, not builds. composer.json must sit beside this file, which is why the Vercel project's Root Directory has to be 'site' — at the repository root there is no composer.json and no vercel.json, so Vercel guesses, builds nothing, and reports 'No Output Directory named public'.",
 
-  "//": "builds, not functions. With functions, Vercel runs its framework detection and then looks for an output directory that a PHP project never produces — 'No Output Directory named public found'. builds says exactly what to make and skips that. Only genuinely static files are handed to @vercel/static: public/ also holds index.php and where.php, and serving those statically would publish PHP source as plain text.",
+  "functions": {
+    "api/index.php": {
+      "runtime": "vercel-php@0.9.0",
+      "maxDuration": 30
+    }
+  },
 
-  "builds": [
-    { "src": "api/index.php", "use": "vercel-php@0.7.3" },
-    { "src": "public/assets/**", "use": "@vercel/static" },
-    { "src": "public/favicon.ico", "use": "@vercel/static" },
-    { "src": "public/robots.txt", "use": "@vercel/static" }
-  ],
+  "//routes": "Everything reaches Laravel through api/index.php. Only genuine static files are routed to public/ — index.php and where.php live there too, and routing to them would serve PHP source as plain text.",
 
   "routes": [
     { "src": "/assets/(.*)", "dest": "/public/assets/$1" },

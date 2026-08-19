@@ -18,10 +18,15 @@ Two things must be set on the Vercel project or it will not build:
 - **Production Branch: `master`.** Vercel looks for `main` by default, and this
   repository does not have one.
 
-`vercel.json` uses `builds` rather than `functions`. With `functions`, Vercel
-runs framework detection and then looks for an output directory that a PHP
-project never produces — *"No Output Directory named public found"*. `builds`
-states exactly what to make and skips that step.
+**Root Directory is not optional.** This runtime requires `composer.json` to sit
+beside `vercel.json`, and both are in `site/`. If Vercel's project root is the
+repository root it finds neither, falls back to guessing, builds nothing, and
+reports *"No Output Directory named public found"*. That error means this file
+was never read — it is almost never a problem with this file's contents.
+
+If the first import already saved Build settings, clear them too:
+**Settings -> Build and Deployment** -> Framework Preset **Other**, and leave
+Build Command and Output Directory empty (Override off).
 
 `vendor/` is not in the repository, so the build runs `composer install`
 itself. That triggers Laravel's `package:discover`, which boots the
@@ -109,11 +114,13 @@ If you need those, that copy of the site belongs on ordinary hosting.
 - **Every request redirects to `/install`** — `ASTRALAB_INSTALLED` is not set.
 - **Styles missing** — the routes in `vercel.json` serve `/assets/*` from
   `public/`. If you add another static folder, add a route for it too.
-- **`vercel-php` runtime not found** — the version pinned in `vercel.json` may
-  have moved on. The runtime is community-maintained, not Vercel's own; check
-  its current version and update that one line.
+- **`vercel-php` runtime not found** — the version pinned in `vercel.json`
+  (`vercel-php@0.9.0`) may have moved on. The runtime is community-maintained,
+  not Vercel's own: https://github.com/vercel-community/php
 - **"No Output Directory named public found"** — `vercel.json` is not being
-  read. Almost always the Root Directory is not set to `site`.
+  read at all. The Root Directory is not `site`, or a Build Command or Output
+  Directory saved from an earlier import is overriding it. This error is about
+  where Vercel is looking, never about what is in the file.
 - **"does not contain the requested branch"** — Production Branch is still
   `main`. This repository uses `master`.
 
