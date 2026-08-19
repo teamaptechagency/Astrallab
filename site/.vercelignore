@@ -1,14 +1,19 @@
-# Everything that only matters on hosting the site owns.
+# What does not belong in a deployment.
 #
-# The self-update system, the packager and the shipped archives are all about
-# replacing files on disk, which a read-only deployment cannot do and does not
-# need — a new version arrives here by being deployed. Left out so they are not
-# uploaded, and so nothing is tempted to call them.
+# storage/ is deliberately NOT here. Only the empty directory skeleton is in
+# the repository, and composer install runs artisan package:discover, which
+# boots the application — with no storage/framework directories that build
+# fails before it starts. At runtime the storage path points at /tmp instead
+# (see api/index.php), so what ships is a skeleton nothing writes to.
+
+# The shipped archives and the self-update machinery: all about replacing files
+# on a disk this host does not have. A new version arrives here by deploying.
 *.zip
 deploy/
-storage/
+
 tests/
+node_modules/
+
 .env
 .env.*
 !.env.example
-node_modules/

@@ -9,6 +9,25 @@ project, and the pages render. Nobody has yet run an actual deployment. Expect
 to fix one or two things on the first try, and read "If it fails" below before
 concluding it is broken.
 
+## Import settings
+
+Two things must be set on the Vercel project or it will not build:
+
+- **Root Directory: `site`.** The repository holds `site/`, `website/` and
+  `woocommerce-plugin/`. Vercel has to be told which one.
+- **Production Branch: `master`.** Vercel looks for `main` by default, and this
+  repository does not have one.
+
+`vercel.json` uses `builds` rather than `functions`. With `functions`, Vercel
+runs framework detection and then looks for an output directory that a PHP
+project never produces — *"No Output Directory named public found"*. `builds`
+states exactly what to make and skips that step.
+
+`vendor/` is not in the repository, so the build runs `composer install`
+itself. That triggers Laravel's `package:discover`, which boots the
+application — which is why `storage/` is deliberately not in `.vercelignore`.
+Only the empty directory skeleton ships; nothing writes to it at runtime.
+
 ## Before you start
 
 Vercel deploys from a Git repository. This code is not on GitHub yet — create a
@@ -93,6 +112,10 @@ If you need those, that copy of the site belongs on ordinary hosting.
 - **`vercel-php` runtime not found** — the version pinned in `vercel.json` may
   have moved on. The runtime is community-maintained, not Vercel's own; check
   its current version and update that one line.
+- **"No Output Directory named public found"** — `vercel.json` is not being
+  read. Almost always the Root Directory is not set to `site`.
+- **"does not contain the requested branch"** — Production Branch is still
+  `main`. This repository uses `master`.
 
 ## Why the hub stays on Hostinger
 

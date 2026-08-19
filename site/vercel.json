@@ -1,11 +1,15 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "api/index.php": {
-      "runtime": "vercel-php@0.7.3",
-      "maxDuration": 30
-    }
-  },
+  "version": 2,
+
+  "//": "builds, not functions. With functions, Vercel runs its framework detection and then looks for an output directory that a PHP project never produces — 'No Output Directory named public found'. builds says exactly what to make and skips that. Only genuinely static files are handed to @vercel/static: public/ also holds index.php and where.php, and serving those statically would publish PHP source as plain text.",
+
+  "builds": [
+    { "src": "api/index.php", "use": "vercel-php@0.7.3" },
+    { "src": "public/assets/**", "use": "@vercel/static" },
+    { "src": "public/favicon.ico", "use": "@vercel/static" },
+    { "src": "public/robots.txt", "use": "@vercel/static" }
+  ],
+
   "routes": [
     { "src": "/assets/(.*)", "dest": "/public/assets/$1" },
     { "src": "/favicon.ico", "dest": "/public/favicon.ico" },
