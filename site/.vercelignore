@@ -1,0 +1,14 @@
+# Everything that only matters on hosting the site owns.
+#
+# The self-update system, the packager and the shipped archives are all about
+# replacing files on disk, which a read-only deployment cannot do and does not
+# need — a new version arrives here by being deployed. Left out so they are not
+# uploaded, and so nothing is tempted to call them.
+*.zip
+deploy/
+storage/
+tests/
+.env
+.env.*
+!.env.example
+node_modules/

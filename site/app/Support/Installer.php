@@ -56,6 +56,14 @@ class Installer
 
     public static function isInstalled(): bool
     {
+        // Said outright, for deployments with no writable disk. Nothing there
+        // can write the lock file, so without this every visitor is sent to an
+        // installer that cannot finish and the shop is one long redirect loop.
+        // See config/astralab.php and DEPLOY-VERCEL.md.
+        if (config("astralab.installed")) {
+            return true;
+        }
+
         return is_file(self::lockPath());
     }
 

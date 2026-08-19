@@ -105,6 +105,21 @@ return [
     */
     "install_lock" => env("ASTRALAB_INSTALL_LOCK", storage_path("app/installed.json")),
 
+    /*
+    | Installed, declared rather than discovered.
+    |
+    | The lock above is a file the installer writes, which works everywhere the
+    | site owns a disk. On a read-only deployment nothing can write it, so every
+    | visitor would be sent to an installer that cannot finish — and the whole
+    | shop would be one long redirect loop.
+    |
+    | ASTRALAB_INSTALLED=true says "the settings arrive as environment variables,
+    | there is nothing to install". Off by default, because a site that wrongly
+    | believes it is installed is harder to diagnose than one that offers you the
+    | wizard you did not need.
+    */
+    "installed" => filter_var(env("ASTRALAB_INSTALLED", false), FILTER_VALIDATE_BOOL),
+
 
     /*
     |--------------------------------------------------------------------------
