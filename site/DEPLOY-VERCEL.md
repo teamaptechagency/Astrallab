@@ -18,6 +18,11 @@ Two things must be set on the Vercel project or it will not build:
 - **Production Branch: `master`.** Vercel looks for `main` by default, and this
   repository does not have one.
 
+**`outputDirectory` is `public`.** Vercel serves static files from there, which
+is where Laravel already keeps them, so /assets/styles.css resolves without any
+rewriting. The routes then run in order: anything ending in .php goes to the
+function — so public/index.php is never served as source — then any real file
+is served, and everything left over is Laravel's.
 **No comments in `vercel.json`.** JSON has none, and Vercel rejects unknown
 properties outright — a `"//"` key used to explain a setting fails the whole
 deployment with *"should NOT have additional property"*. Anything worth saying

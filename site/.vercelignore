@@ -17,3 +17,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# A shared-hosting diagnostic: "which copy of the app is actually running?".
+# There is only ever one copy here, and it has no business being reachable.
+public/where.php
