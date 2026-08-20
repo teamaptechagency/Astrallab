@@ -18,6 +18,10 @@ Two things must be set on the Vercel project or it will not build:
 - **Production Branch: `master`.** Vercel looks for `main` by default, and this
   repository does not have one.
 
+**No comments in `vercel.json`.** JSON has none, and Vercel rejects unknown
+properties outright — a `"//"` key used to explain a setting fails the whole
+deployment with *"should NOT have additional property"*. Anything worth saying
+about that file is said here instead.
 **Root Directory is not optional.** This runtime requires `composer.json` to sit
 beside `vercel.json`, and both are in `site/`. If Vercel's project root is the
 repository root it finds neither, falls back to guessing, builds nothing, and
@@ -123,6 +127,9 @@ If you need those, that copy of the site belongs on ordinary hosting.
   where Vercel is looking, never about what is in the file.
 - **"does not contain the requested branch"** — Production Branch is still
   `main`. This repository uses `master`.
+- **"should NOT have additional property"** — something in `vercel.json` is not
+  a key Vercel knows. It validates the file strictly; there are no comments and
+  no spare keys.
 
 ## Why the hub stays on Hostinger
 
