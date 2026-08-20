@@ -20,9 +20,18 @@ Two things must be set on the Vercel project or it will not build:
 
 **`outputDirectory` is `public`.** Vercel serves static files from there, which
 is where Laravel already keeps them, so /assets/styles.css resolves without any
-rewriting. The routes then run in order: anything ending in .php goes to the
-function — so public/index.php is never served as source — then any real file
-is served, and everything left over is Laravel's.
+rewriting.
+
+The routes then run in order, and the order is the whole point:
+
+1. `/` goes to the function. Without this line the static handler finds
+   `public/index.php`, treats it as the directory index, and sends Laravel's
+   front controller to the browser as a file to download. Visiting the site
+   downloads a .php file instead of opening the shop.
+2. Anything ending in `.php` goes to the function, so no PHP file is ever
+   served as source.
+3. Then a real static file wins if there is one.
+4. Then everything else is Laravel's.
 **No comments in `vercel.json`.** JSON has none, and Vercel rejects unknown
 properties outright — a `"//"` key used to explain a setting fails the whole
 deployment with *"should NOT have additional property"*. Anything worth saying
@@ -121,8 +130,10 @@ If you need those, that copy of the site belongs on ordinary hosting.
   unreachable. Check the function logs in the Vercel dashboard; `LOG_CHANNEL=stderr`
   is what puts Laravel's own errors there.
 - **Every request redirects to `/install`** — `ASTRALAB_INSTALLED` is not set.
-- **Styles missing** — the routes in `vercel.json` serve `/assets/*` from
-  `public/`. If you add another static folder, add a route for it too.
+- **Visiting the site downloads a .php file** — the `/` route is missing from
+  `vercel.json`, so the static handler is serving `public/index.php` as a file.
+- **Styles missing** — static files come from `public/` via the filesystem
+  handle. If you add another static folder, it is served the same way.
 - **`vercel-php` runtime not found** — the version pinned in `vercel.json`
   (`vercel-php@0.9.0`) may have moved on. The runtime is community-maintained,
   not Vercel's own: https://github.com/vercel-community/php
